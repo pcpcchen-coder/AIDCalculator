@@ -12,6 +12,7 @@ import {
   YAxis,
 } from 'recharts';
 import type { GenerateInput, GenerateResult } from '@contracts/dcgen';
+import { tpl, useI18n } from '@/i18n';
 import { cn } from '@/lib/utils';
 import {
   Drawer,
@@ -27,7 +28,7 @@ import {
   fmt,
   fmtMw,
   pickNonIt,
-  typeLabel,
+  typeLabelKey,
 } from '@/components/generator/generator-utils';
 
 export interface ComparedDesign {
@@ -59,6 +60,7 @@ interface MetricRow {
 }
 
 export default function CompareDrawer({ open, onOpenChange, designs }: CompareDrawerProps) {
+  const { t } = useI18n();
   const rows: MetricRow[] = useMemo(() => {
     const ms = designs.map((d) => {
       const dc = d.result.results[0];
@@ -70,34 +72,43 @@ export default function CompareDrawer({ open, onOpenChange, designs }: CompareDr
     const racks = designs.map((d) => d.result.results[0]?.it.totalRacks ?? 0);
     const density = designs.map((d) => d.result.results[0]?.it.powerDensityKwM2 ?? 0);
     return [
-      { label: 'IT 機架總數', values: racks, format: (v) => fmt(v) },
-      { label: '總峰值功率 MW', values: designs.map((_, i) => get(i, (m) => m.totalMw)), format: fmtMw },
-      { label: 'IT 峰值功率 MW', values: designs.map((_, i) => get(i, (m) => m.itMw)), format: fmtMw },
-      { label: '功率密度 kW/m²', values: density, format: (v) => fmt(v, 2) },
-      { label: 'White space m²', values: designs.map((_, i) => get(i, (m) => m.whiteSpaceM2)), format: (v) => fmt(v) },
-      { label: 'Gray space 室內 m²', values: designs.map((_, i) => get(i, (m) => m.grayIndoorM2)), format: (v) => fmt(v) },
-      { label: 'Gray space 室外 m²', values: designs.map((_, i) => get(i, (m) => m.grayOutdoorM2)), format: (v) => fmt(v) },
-      { label: '冷卻功耗 MW', values: designs.map((_, i) => get(i, (m) => m.coolingMw)), format: fmtMw },
-      { label: '配電轉換損耗 MW', values: designs.map((_, i) => get(i, (m) => m.lossMw)), format: fmtMw },
-      { label: '設備總數量', values: designs.map((_, i) => get(i, (m) => m.equipmentCount)), format: (v) => fmt(v) },
+      { label: t('generator.results.totalRacks'), values: racks, format: (v) => fmt(v) },
+      { label: t('generator.compare.totalPowerMw'), values: designs.map((_, i) => get(i, (m) => m.totalMw)), format: fmtMw },
+      { label: `${t('generator.results.itPower')} MW`, values: designs.map((_, i) => get(i, (m) => m.itMw)), format: fmtMw },
+      { label: t('generator.compare.powerDensity'), values: density, format: (v) => fmt(v, 2) },
+      { label: t('generator.compare.whiteSpace'), values: designs.map((_, i) => get(i, (m) => m.whiteSpaceM2)), format: (v) => fmt(v) },
+      { label: t('generator.compare.grayIndoor'), values: designs.map((_, i) => get(i, (m) => m.grayIndoorM2)), format: (v) => fmt(v) },
+      { label: t('generator.compare.grayOutdoor'), values: designs.map((_, i) => get(i, (m) => m.grayOutdoorM2)), format: (v) => fmt(v) },
+      { label: t('generator.compare.coolingMw'), values: designs.map((_, i) => get(i, (m) => m.coolingMw)), format: fmtMw },
+      { label: t('generator.compare.lossMw'), values: designs.map((_, i) => get(i, (m) => m.lossMw)), format: fmtMw },
+      { label: t('generator.compare.equipmentCount'), values: designs.map((_, i) => get(i, (m) => m.equipmentCount)), format: (v) => fmt(v) },
     ];
-  }, [designs]);
+  }, [designs, t]);
+
+  const chartLabels = {
+    it: t('generator.compare.chartIt'),
+    cooling: t('generator.compare.chartCooling'),
+    loss: t('generator.compare.chartLoss'),
+    white: t('generator.results.whiteSpace'),
+    grayIndoor: t('generator.compare.grayIndoorShort'),
+    grayOutdoor: t('generator.compare.grayOutdoorShort'),
+  };
 
   const powerChartData = designs.map((d, i) => ({
     name: d.name.length > 12 ? `${d.name.slice(0, 12)}…` : d.name,
-    IT峰值: rows[2].values[i],
-    冷卻功耗: rows[7].values[i],
-    配電損耗: rows[8].values[i],
+    [chartLabels.it]: rows[2].values[i],
+    [chartLabels.cooling]: rows[7].values[i],
+    [chartLabels.loss]: rows[8].values[i],
   }));
   const spaceChartData = designs.map((d, i) => ({
     name: d.name.length > 12 ? `${d.name.slice(0, 12)}…` : d.name,
-    'White space': rows[4].values[i],
-    'Gray 室內': rows[5].values[i],
-    'Gray 室外': rows[6].values[i],
+    [chartLabels.white]: rows[4].values[i],
+    [chartLabels.grayIndoor]: rows[5].values[i],
+    [chartLabels.grayOutdoor]: rows[6].values[i],
   }));
 
   const exportCsv = () => {
-    const header = ['指標', ...designs.map((d) => d.name)];
+    const header = [t('generator.compare.metric'), ...designs.map((d) => d.name)];
     const lines = [header.join(',')];
     for (const row of rows) {
       lines.push([row.label, ...row.values.map((v) => row.format(v))].join(','));
@@ -115,7 +126,9 @@ export default function CompareDrawer({ open, onOpenChange, designs }: CompareDr
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-h-[92vh] border-line bg-bg-1">
         <DrawerHeader className="mx-auto w-full max-w-[1400px] flex-row items-center justify-between border-b border-line px-4 md:px-8">
-          <DrawerTitle className="text-lg font-bold text-text-0">情境比較（{designs.length}）</DrawerTitle>
+          <DrawerTitle className="text-lg font-bold text-text-0">
+            {tpl(t('generator.compare.title'), { n: designs.length })}
+          </DrawerTitle>
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -123,11 +136,11 @@ export default function CompareDrawer({ open, onOpenChange, designs }: CompareDr
               className="flex items-center gap-1.5 rounded-lg border border-line bg-bg-2 px-3 py-1.5 text-xs text-text-1 transition-colors hover:border-accent/50 hover:text-accent"
             >
               <Download className="h-3.5 w-3.5" />
-              匯出比較 CSV
+              {t('generator.compare.exportCsv')}
             </button>
             <button
               type="button"
-              aria-label="關閉比較"
+              aria-label={t('generator.compare.close')}
               onClick={() => onOpenChange(false)}
               className="rounded-lg border border-line bg-bg-2 p-1.5 text-text-1 transition-colors hover:text-accent"
             >
@@ -152,7 +165,7 @@ export default function CompareDrawer({ open, onOpenChange, designs }: CompareDr
                 <thead>
                   <tr className="border-b border-line">
                     <th className="bg-bg-1 px-4 py-3 text-left text-xs font-medium uppercase tracking-[0.08em] text-text-1">
-                      指標
+                      {t('generator.compare.metric')}
                     </th>
                     {designs.map((d) => (
                       <th key={d.id} className="bg-bg-1 px-4 py-3 text-right">
@@ -164,7 +177,7 @@ export default function CompareDrawer({ open, onOpenChange, designs }: CompareDr
                             variant="outline"
                             className={cn('text-[10px] font-normal', TYPE_BADGE_CLASS[d.input.datacenterUseCase])}
                           >
-                            {typeLabel(d.input.datacenterUseCase)}
+                            {t(typeLabelKey(d.input.datacenterUseCase))}
                           </Badge>
                         </div>
                       </th>
@@ -201,7 +214,7 @@ export default function CompareDrawer({ open, onOpenChange, designs }: CompareDr
                 variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }}
                 className="rounded-xl border border-line bg-bg-2 p-5"
               >
-                <h4 className="mb-3 text-sm font-medium text-text-0">峰值功率組成（MW）</h4>
+                <h4 className="mb-3 text-sm font-medium text-text-0">{t('generator.compare.powerChartTitle')}</h4>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={powerChartData}>
@@ -210,9 +223,9 @@ export default function CompareDrawer({ open, onOpenChange, designs }: CompareDr
                       <YAxis tick={{ fill: '#64748B', fontSize: 11, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
                       <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: 'rgba(34,211,238,0.05)' }} />
                       <Legend iconSize={8} formatter={(v: string) => <span className="text-xs text-text-1">{v}</span>} />
-                      <Bar dataKey="IT峰值" stackId="p" fill={CHART_COLORS[0]} animationDuration={600} />
-                      <Bar dataKey="冷卻功耗" stackId="p" fill={CHART_COLORS[1]} animationDuration={600} />
-                      <Bar dataKey="配電損耗" stackId="p" fill={CHART_COLORS[2]} animationDuration={600} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey={chartLabels.it} stackId="p" fill={CHART_COLORS[0]} animationDuration={600} />
+                      <Bar dataKey={chartLabels.cooling} stackId="p" fill={CHART_COLORS[1]} animationDuration={600} />
+                      <Bar dataKey={chartLabels.loss} stackId="p" fill={CHART_COLORS[2]} animationDuration={600} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -221,7 +234,7 @@ export default function CompareDrawer({ open, onOpenChange, designs }: CompareDr
                 variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }}
                 className="rounded-xl border border-line bg-bg-2 p-5"
               >
-                <h4 className="mb-3 text-sm font-medium text-text-0">空間組成（m²）</h4>
+                <h4 className="mb-3 text-sm font-medium text-text-0">{t('generator.compare.spaceChartTitle')}</h4>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={spaceChartData}>
@@ -230,9 +243,9 @@ export default function CompareDrawer({ open, onOpenChange, designs }: CompareDr
                       <YAxis tick={{ fill: '#64748B', fontSize: 11, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
                       <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: 'rgba(34,211,238,0.05)' }} />
                       <Legend iconSize={8} formatter={(v: string) => <span className="text-xs text-text-1">{v}</span>} />
-                      <Bar dataKey="White space" fill={CHART_COLORS[0]} animationDuration={600} />
-                      <Bar dataKey="Gray 室內" fill={CHART_COLORS[2]} animationDuration={600} />
-                      <Bar dataKey="Gray 室外" fill={CHART_COLORS[3]} animationDuration={600} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey={chartLabels.white} fill={CHART_COLORS[0]} animationDuration={600} />
+                      <Bar dataKey={chartLabels.grayIndoor} fill={CHART_COLORS[2]} animationDuration={600} />
+                      <Bar dataKey={chartLabels.grayOutdoor} fill={CHART_COLORS[3]} animationDuration={600} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

@@ -33,7 +33,7 @@ import type {
   GenerateResult,
   OptimizationCriterion,
 } from '@contracts/dcgen';
-import { EQUIPMENT_CATEGORY_LABELS } from '@contracts/dcgen';
+import { tpl, useI18n } from '@/i18n';
 import { cn } from '@/lib/utils';
 import StatCard from '@/components/StatCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -41,6 +41,8 @@ import { Badge } from '@/components/ui/badge';
 import SegmentedControl from '@/components/generator/SegmentedControl';
 import {
   CHART_COLORS,
+  EQUIPMENT_CATEGORY_KEYS,
+  HEAT_MODE_KEYS,
   deriveMetrics,
   fmt,
   fmtDateTime,
@@ -112,6 +114,7 @@ function SectionCard({
 
 // ---------------- 空狀態 / 載入態 / 錯誤態 ----------------
 function EmptyState() {
+  const { t } = useI18n();
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -119,9 +122,9 @@ function EmptyState() {
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className="flex min-h-[420px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-line bg-bg-2/50 p-10 text-center"
     >
-      <img src="/empty-rack.svg" alt="空機架插畫" className="h-36 w-auto opacity-80" />
-      <p className="text-sm text-text-1">設定左側參數，按下「產生配置」</p>
-      <p className="font-mono text-xs text-text-2">試試：AI Training · 50 MW · 2027 · N+1</p>
+      <img src="/empty-rack.svg" alt={t('generator.results.emptyAlt')} className="h-36 w-auto opacity-80" />
+      <p className="text-sm text-text-1">{t('generator.results.emptyHint')}</p>
+      <p className="font-mono text-xs text-text-2">{t('generator.results.emptyExample')}</p>
     </motion.div>
   );
 }
@@ -145,6 +148,7 @@ function LoadingState() {
 }
 
 function ErrorState({ message }: { message: string }) {
+  const { t } = useI18n();
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -154,12 +158,10 @@ function ErrorState({ message }: { message: string }) {
     >
       <div className="flex items-center gap-2 text-red">
         <AlertTriangle className="h-5 w-5" />
-        <h3 className="text-base font-medium">產生失敗</h3>
+        <h3 className="text-base font-medium">{t('generator.results.errorTitle')}</h3>
       </div>
       <p className="text-sm leading-relaxed text-text-1">{message}</p>
-      <p className="text-xs text-text-2">
-        建議：確認目標規模在型錄可配置範圍內，或改用「All」年份／自動選型後重試。
-      </p>
+      <p className="text-xs text-text-2">{t('generator.results.errorHint')}</p>
     </motion.div>
   );
 }
@@ -172,6 +174,7 @@ interface PowerSegment {
 }
 
 function PowerCompositionBar({ segments }: { segments: PowerSegment[] }) {
+  const { t } = useI18n();
   const total = segments.reduce((a, s) => a + s.value, 0);
   const data = [Object.fromEntries(segments.map((s) => [s.name, s.value]))];
   return (
@@ -180,12 +183,15 @@ function PowerCompositionBar({ segments }: { segments: PowerSegment[] }) {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} layout="vertical" margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
             <XAxis type="number" hide domain={[0, total]} />
-            <YAxis type="category" hide dataKey={() => '功率'} />
+            <YAxis type="category" hide dataKey={() => t('generator.results.power')} />
             <Tooltip
               cursor={{ fill: 'rgba(34,211,238,0.05)' }}
               contentStyle={TOOLTIP_STYLE}
               formatter={(value: number, name: string) => [
-                `${fmtMw(value)} MW（${fmt((value / total) * 100, 1)}%）`,
+                tpl(t('generator.results.mwShare'), {
+                  mw: fmtMw(value),
+                  pct: fmt((value / total) * 100, 1),
+                }),
                 name,
               ]}
             />
@@ -283,13 +289,14 @@ function CompositionDonut({
 
 // ---------------- BOM 表 ----------------
 function VendorCell({ vendor }: { vendor: string | null }) {
+  const { t } = useI18n();
   const delta = isDeltaVendor(vendor);
   return (
     <span className="flex items-center gap-1.5 text-text-1">
       {vendor ?? '—'}
       {delta && (
         <span
-          title="台達電子"
+          title={t('generator.bom.deltaVendor')}
           className="inline-block h-2 w-2 rounded-full bg-green shadow-[0_0_6px_rgba(52,211,153,0.6)]"
         />
       )}
@@ -302,31 +309,34 @@ const tdCls = 'px-3 py-2.5 text-sm text-text-1';
 const tdMono = cn(tdCls, 'font-mono text-xs');
 
 function CategoryBadge({ category }: { category: string }) {
+  const { t } = useI18n();
+  const key = EQUIPMENT_CATEGORY_KEYS[category as EquipmentCategory];
   return (
     <Badge variant="outline" className="border-cool/40 bg-cool/10 text-[11px] font-normal text-cool">
-      {EQUIPMENT_CATEGORY_LABELS[category as EquipmentCategory] ?? category}
+      {key ? t(key) : category}
     </Badge>
   );
 }
 
 function CoolingBomTable({ designs }: { designs: Partial<Record<EquipmentCategory, EquipmentDesignEntry>> }) {
+  const { t } = useI18n();
   const rows = (Object.entries(designs) as [EquipmentCategory, EquipmentDesignEntry][]).filter(
     ([, d]) => d != null,
   );
-  if (!rows.length) return <p className="text-sm text-text-2">型錄中無符合條件的冷卻設備</p>;
+  if (!rows.length) return <p className="text-sm text-text-2">{t('generator.bom.noCooling')}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[720px] border-collapse">
         <thead>
           <tr className="border-b border-line">
-            <th className={thCls}>設備類別</th>
-            <th className={thCls}>型號</th>
-            <th className={thCls}>廠商</th>
-            <th className={cn(thCls, 'text-right')}>數量</th>
-            <th className={cn(thCls, 'text-right')}>單位/pod</th>
-            <th className={cn(thCls, 'text-right')}>容量 MW</th>
-            <th className={cn(thCls, 'text-right')}>峰值功耗 MW</th>
-            <th className={cn(thCls, 'text-right')}>空間 m²</th>
+            <th className={thCls}>{t('generator.bom.category')}</th>
+            <th className={thCls}>{t('generator.bom.model')}</th>
+            <th className={thCls}>{t('generator.bom.vendor')}</th>
+            <th className={cn(thCls, 'text-right')}>{t('generator.bom.count')}</th>
+            <th className={cn(thCls, 'text-right')}>{t('generator.bom.unitsPerPod')}</th>
+            <th className={cn(thCls, 'text-right')}>{t('generator.bom.capacityMw')}</th>
+            <th className={cn(thCls, 'text-right')}>{t('generator.bom.peakPowerMw')}</th>
+            <th className={cn(thCls, 'text-right')}>{t('generator.bom.spaceM2')}</th>
           </tr>
         </thead>
         <tbody>
@@ -355,13 +365,14 @@ function PowerBomRows({
   designs: Partial<Record<EquipmentCategory, EquipmentDesignEntry>>;
   stageClass: string;
 }) {
+  const { t } = useI18n();
   const rows = (Object.entries(designs) as [EquipmentCategory, EquipmentDesignEntry][]).filter(
     ([, d]) => d != null,
   );
   if (!rows.length) {
     return (
       <tr className="border-b border-line/60">
-        <td colSpan={8} className={cn(tdCls, 'text-text-2')}>此階段無設備</td>
+        <td colSpan={8} className={cn(tdCls, 'text-text-2')}>{t('generator.bom.noStageEquipment')}</td>
       </tr>
     );
   }
@@ -371,7 +382,7 @@ function PowerBomRows({
         <tr key={cat} className="border-b border-line/60 transition-colors duration-150 hover:bg-bg-3">
           <td className={tdCls}>
             <Badge variant="outline" className={cn('text-[11px] font-normal', stageClass)}>
-              {EQUIPMENT_CATEGORY_LABELS[cat] ?? cat}
+              {t(EQUIPMENT_CATEGORY_KEYS[cat])}
             </Badge>
           </td>
           <td className={cn(tdMono, 'text-text-0')}>{d.name}</td>
@@ -398,28 +409,29 @@ function PowerBomTable({
   designsIt: Partial<Record<EquipmentCategory, EquipmentDesignEntry>>;
   designsFacility: Partial<Record<EquipmentCategory, EquipmentDesignEntry>>;
 }) {
+  const { t } = useI18n();
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[720px] border-collapse">
         <thead>
           <tr className="border-b border-line">
-            <th className={thCls}>設備類別</th>
-            <th className={thCls}>型號</th>
-            <th className={thCls}>廠商</th>
-            <th className={cn(thCls, 'text-right')}>數量</th>
-            <th className={cn(thCls, 'text-right')}>容量 MW</th>
-            <th className={cn(thCls, 'text-right')}>效率</th>
-            <th className={cn(thCls, 'text-right')}>轉換損耗 MW</th>
-            <th className={cn(thCls, 'text-right')}>空間 m²</th>
+            <th className={thCls}>{t('generator.bom.category')}</th>
+            <th className={thCls}>{t('generator.bom.model')}</th>
+            <th className={thCls}>{t('generator.bom.vendor')}</th>
+            <th className={cn(thCls, 'text-right')}>{t('generator.bom.count')}</th>
+            <th className={cn(thCls, 'text-right')}>{t('generator.bom.capacityMw')}</th>
+            <th className={cn(thCls, 'text-right')}>{t('generator.bom.efficiency')}</th>
+            <th className={cn(thCls, 'text-right')}>{t('generator.bom.conversionLossMw')}</th>
+            <th className={cn(thCls, 'text-right')}>{t('generator.bom.spaceM2')}</th>
           </tr>
         </thead>
         <tbody>
           <tr className="border-b border-line bg-bg-1/60">
-            <td colSpan={8} className="px-3 py-2 text-xs font-medium tracking-wide text-accent">IT 階段</td>
+            <td colSpan={8} className="px-3 py-2 text-xs font-medium tracking-wide text-accent">{t('generator.bom.itStage')}</td>
           </tr>
           <PowerBomRows designs={designsIt} stageClass="border-accent/40 bg-accent/10 text-accent" />
           <tr className="border-b border-line bg-bg-1/60">
-            <td colSpan={8} className="px-3 py-2 text-xs font-medium tracking-wide text-violet">廠務階段（支撐冷卻負載）</td>
+            <td colSpan={8} className="px-3 py-2 text-xs font-medium tracking-wide text-violet">{t('generator.bom.facilityStage')}</td>
           </tr>
           <PowerBomRows designs={designsFacility} stageClass="border-violet/40 bg-violet/10 text-violet" />
         </tbody>
@@ -436,6 +448,7 @@ function ParameterSnapshot({
   result: GenerateResult;
   defaults: Record<string, number>;
 }) {
+  const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const entries = Object.entries(result.parameterSnapshot).sort(([a], [b]) => a.localeCompare(b));
@@ -444,10 +457,10 @@ function ParameterSnapshot({
     try {
       await navigator.clipboard.writeText(JSON.stringify(result.parameterSnapshot, null, 2));
       setCopied(true);
-      toast.success('已複製參數快照 JSON');
+      toast.success(t('generator.snapshot.copied'));
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      toast.error('複製失敗');
+      toast.error(t('generator.snapshot.copyFailed'));
     }
   };
 
@@ -460,8 +473,8 @@ function ParameterSnapshot({
       >
         <span className="flex items-center gap-2 text-base font-medium text-text-0">
           <Boxes className="h-4 w-4 text-accent" />
-          本次演算參數快照
-          <span className="font-mono text-xs font-normal text-text-2">{fmtDateTime(result.createdAt)}</span>
+          {t('generator.snapshot.title')}
+          <span className="font-mono text-xs font-normal text-text-2">{fmtDateTime(result.createdAt, lang)}</span>
         </span>
         <span className="flex items-center gap-2">
           <span
@@ -480,7 +493,7 @@ function ParameterSnapshot({
             className="flex items-center gap-1 rounded-lg border border-line bg-bg-1 px-2.5 py-1.5 text-xs text-text-1 transition-colors hover:border-accent/50 hover:text-accent"
           >
             {copied ? <Check className="h-3.5 w-3.5 text-green" /> : <Copy className="h-3.5 w-3.5" />}
-            複製 JSON
+            {t('generator.snapshot.copy')}
           </span>
           <ChevronDown
             className={cn('h-4 w-4 text-text-2 transition-transform duration-200', open && 'rotate-180')}
@@ -534,6 +547,7 @@ export default function ResultsDashboard({
   stale,
   paramDefaults,
 }: ResultsDashboardProps) {
+  const { t } = useI18n();
   const [configIdx, setConfigIdx] = useState(0);
   const [criterion, setCriterion] = useState<OptimizationCriterion | undefined>(undefined);
 
@@ -559,16 +573,16 @@ export default function ResultsDashboard({
   const rackEntries = Object.entries(dc.it.rackCount);
 
   const powerSegments: PowerSegment[] = [
-    { name: 'IT 負載', value: metrics.itMw, color: '#22D3EE' },
-    { name: '冷卻功耗', value: metrics.coolingMw, color: '#38BDF8' },
-    { name: '配電轉換損耗', value: metrics.lossMw, color: '#A78BFA' },
-    { name: '安全餘裕保留', value: metrics.safetyReserveMw, color: '#64748B' },
+    { name: t('generator.results.segIt'), value: metrics.itMw, color: '#22D3EE' },
+    { name: t('generator.results.segCooling'), value: metrics.coolingMw, color: '#38BDF8' },
+    { name: t('generator.results.segLoss'), value: metrics.lossMw, color: '#A78BFA' },
+    { name: t('generator.results.segSafety'), value: metrics.safetyReserveMw, color: '#64748B' },
   ];
 
   const spaceData: DonutDatum[] = [
-    { name: 'White space', value: metrics.whiteSpaceM2, color: '#22D3EE' },
-    { name: 'Gray space 室內', value: metrics.grayIndoorM2, color: '#A78BFA' },
-    { name: 'Gray space 室外', value: metrics.grayOutdoorM2, color: '#F59E0B' },
+    { name: t('generator.results.whiteSpace'), value: metrics.whiteSpaceM2, color: '#22D3EE' },
+    { name: t('generator.results.grayIndoor'), value: metrics.grayIndoorM2, color: '#A78BFA' },
+    { name: t('generator.results.grayOutdoor'), value: metrics.grayOutdoorM2, color: '#F59E0B' },
   ];
 
   const rackData: DonutDatum[] = rackEntries.map(([name, value], i) => ({
@@ -607,14 +621,22 @@ export default function ResultsDashboard({
               onChange={(v) => setCriterion(v)}
               options={dc.nonIt.map((n) => ({
                 value: n.criterion,
-                label: n.criterion === 'Space' ? 'Space 空間最佳' : 'Power 功率最佳',
+                label:
+                  n.criterion === 'Space'
+                    ? t('generator.results.criterionSpace')
+                    : t('generator.results.criterionPower'),
               }))}
             />
           )}
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="border-line font-mono text-[11px] font-normal text-text-2">
-            {dc.configName} · {dc.it.generation} · Pods {fmt(dc.meta.pods)} · 最大 pod {fmt(dc.meta.maxPodPowerKw, 1)} kW
+            {tpl(t('generator.results.metaBadge'), {
+              config: dc.configName,
+              generation: dc.it.generation,
+              pods: fmt(dc.meta.pods),
+              kw: fmt(dc.meta.maxPodPowerKw, 1),
+            })}
           </Badge>
           <AnimatePresence>
             {stale && (
@@ -624,7 +646,7 @@ export default function ResultsDashboard({
                 exit={{ opacity: 0, scale: 0.9 }}
                 className="animate-pulse rounded-full border border-power/50 bg-power/10 px-2.5 py-1 text-[11px] font-medium text-power"
               >
-                參數已變更，請重新產生
+                {t('generator.results.stale')}
               </motion.span>
             )}
           </AnimatePresence>
@@ -634,7 +656,7 @@ export default function ResultsDashboard({
       {/* (a) 核心指標卡 */}
       <motion.div variants={sectionVariants} className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <StatCard
-          label="IT 機架總數"
+          label={t('generator.results.totalRacks')}
           value={dc.it.totalRacks}
           suffix="racks"
           icon={<Server className="h-4 w-4" />}
@@ -642,16 +664,20 @@ export default function ResultsDashboard({
           hint={rackBreakdown}
         />
         <StatCard
-          label="總峰值功率"
+          label={t('generator.results.totalPower')}
           value={metrics.totalMw}
           suffix="MW"
           decimals={1}
           icon={<Zap className="h-4 w-4" />}
           variant="power"
-          hint={`IT ${fmtMw(metrics.itMw)} MW ＋ 冷卻 ${fmtMw(metrics.coolingMw)} MW ＋ 損耗 ${fmtMw(metrics.lossMw)} MW`}
+          hint={tpl(t('generator.results.totalPowerHint'), {
+            it: fmtMw(metrics.itMw),
+            cooling: fmtMw(metrics.coolingMw),
+            loss: fmtMw(metrics.lossMw),
+          })}
         />
         <StatCard
-          label="功率密度"
+          label={t('generator.results.powerDensity')}
           value={dc.it.powerDensityKwM2}
           suffix="kW/m²"
           decimals={2}
@@ -659,63 +685,75 @@ export default function ResultsDashboard({
           variant="cool"
         />
         <StatCard
-          label="White space"
+          label={t('generator.results.whiteSpace')}
           value={metrics.whiteSpaceM2}
           suffix="m²"
           icon={<LayoutGrid className="h-4 w-4" />}
           variant="green"
-          hint={`Gray space 室內 ${fmt(metrics.grayIndoorM2)} m² · 室外 ${fmt(metrics.grayOutdoorM2)} m²`}
+          hint={tpl(t('generator.results.whiteSpaceHint'), {
+            indoor: fmt(metrics.grayIndoorM2),
+            outdoor: fmt(metrics.grayOutdoorM2),
+          })}
         />
       </motion.div>
 
       {/* (b) 功率組成堆疊長條 */}
-      <SectionCard title={`功率組成（${activeCriterion === 'Power' ? '功率最佳化' : '空間最佳化'}方案）`} icon={Zap}>
+      <SectionCard
+        title={tpl(t('generator.results.powerComposition'), {
+          mode: t(
+            activeCriterion === 'Power'
+              ? 'generator.results.modePower'
+              : 'generator.results.modeSpace',
+          ),
+        })}
+        icon={Zap}
+      >
         <PowerCompositionBar segments={powerSegments} />
       </SectionCard>
 
       {/* (c) 雙圓環：空間組成 + IT 機架分佈 */}
       <motion.div variants={sectionVariants} className="grid gap-4 md:grid-cols-2">
-        <SectionCard title="空間組成" icon={LayoutGrid}>
+        <SectionCard title={t('generator.results.spaceComposition')} icon={LayoutGrid}>
           <CompositionDonut
-            title="White / Gray space"
+            title={t('generator.results.spaceDonutTitle')}
             data={spaceData}
             centerValue={metrics.whiteSpaceM2 + metrics.grayIndoorM2 + metrics.grayOutdoorM2}
-            centerSuffix="總樓板 m²"
+            centerSuffix={t('generator.results.totalFloorM2')}
           />
           <div className="mt-2 grid grid-cols-2 gap-3">
             <div className="rounded-lg border border-line bg-bg-1 p-3">
               <div className="flex items-center gap-1.5 text-[11px] text-text-2">
                 <span className="h-2 w-2 rounded-sm bg-violet" />
-                Gray space 室內
+                {t('generator.results.grayIndoor')}
               </div>
               <div className="mt-1 font-mono text-lg font-bold text-text-0">{fmt(metrics.grayIndoorM2)}<span className="ml-1 text-xs font-normal text-text-2">m²</span></div>
             </div>
             <div className="rounded-lg border border-line bg-bg-1 p-3">
               <div className="flex items-center gap-1.5 text-[11px] text-text-2">
                 <span className="h-2 w-2 rounded-sm bg-power" />
-                Gray space 室外
+                {t('generator.results.grayOutdoor')}
               </div>
               <div className="mt-1 font-mono text-lg font-bold text-text-0">{fmt(metrics.grayOutdoorM2)}<span className="ml-1 text-xs font-normal text-text-2">m²</span></div>
             </div>
           </div>
         </SectionCard>
-        <SectionCard title="IT 機架分佈" icon={Server}>
+        <SectionCard title={t('generator.results.rackDistribution')} icon={Server}>
           <CompositionDonut
-            title="依 node type"
+            title={t('generator.results.rackDonutTitle')}
             data={rackData}
             centerValue={dc.it.totalRacks}
-            centerSuffix="總機架數"
+            centerSuffix={t('generator.results.totalRacksSuffix')}
           />
         </SectionCard>
       </motion.div>
 
       {/* (d) 冷卻設備 BOM */}
       <SectionCard
-        title="冷卻設備清單"
+        title={t('generator.bom.cooling')}
         icon={Snowflake}
         aside={
           <Badge variant="outline" className="border-cool/40 bg-cool/10 text-[11px] font-normal text-cool">
-            {result.input.heatRejectionMode}
+            {t(HEAT_MODE_KEYS[result.input.heatRejectionMode])}
           </Badge>
         }
       >
@@ -723,7 +761,7 @@ export default function ResultsDashboard({
       </SectionCard>
 
       {/* (e) 配電設備 BOM */}
-      <SectionCard title="配電設備清單" icon={Zap}>
+      <SectionCard title={t('generator.bom.power')} icon={Zap}>
         <PowerBomTable
           designsIt={nonIt?.power.designsIt ?? {}}
           designsFacility={nonIt?.power.designsFacility ?? {}}

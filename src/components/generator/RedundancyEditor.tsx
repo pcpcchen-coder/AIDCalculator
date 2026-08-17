@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { REDUNDANCY_SLOTS } from '@contracts/dcgen';
 import type { RedundancyMap, RedundancySlotKey } from '@contracts/dcgen';
+import { tpl, useI18n } from '@/i18n';
 import { cn } from '@/lib/utils';
 import SegmentedControl from '@/components/generator/SegmentedControl';
 import {
@@ -23,6 +24,7 @@ const OPTIONS = [
 
 /** 七槽冗餘編輯器：N / N+1 / N+2 / 2N / 自訂 xN/y（generator.md §2.1 群組 C） */
 export default function RedundancyEditor({ value, onChange }: RedundancyEditorProps) {
+  const { t } = useI18n();
   const setSlot = (key: RedundancySlotKey, v: string) => onChange({ ...value, [key]: v });
 
   return (
@@ -95,7 +97,11 @@ export default function RedundancyEditor({ value, onChange }: RedundancyEditorPr
                     />
                     {ratio != null && (
                       <span className="ml-auto font-mono text-[11px] text-cool">
-                        有效容量 = {parsed.y}/{parsed.x} × 額定 = {fmt(ratio * 100, 1)}%
+                        {tpl(t('generator.redundancy.effective'), {
+                          y: parsed.y,
+                          x: parsed.x,
+                          pct: fmt(ratio * 100, 1),
+                        })}
                       </span>
                     )}
                   </div>

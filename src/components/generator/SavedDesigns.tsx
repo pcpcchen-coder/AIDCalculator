@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import type { DatacenterType, GenerateInput, GenerateResult } from '@contracts/dcgen';
 import { DATACENTER_TYPES } from '@contracts/dcgen';
 import { trpc } from '@/providers/trpc';
+import { tpl, useI18n } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import CompareDrawer from '@/components/generator/CompareDrawer';
 import type { ComparedDesign } from '@/components/generator/CompareDrawer';
-import { TYPE_BADGE_CLASS, fmt, fmtDateTime, typeLabel } from '@/components/generator/generator-utils';
+import { TYPE_BADGE_CLASS, fmt, fmtDateTime, typeLabelKey } from '@/components/generator/generator-utils';
 
 interface SavedDesignsProps {
   onLoad: (design: { name: string; input: GenerateInput; result: GenerateResult }) => void;
@@ -30,19 +31,16 @@ interface SavedDesignsProps {
 const thCls = 'bg-bg-1 px-3 py-2.5 text-left text-xs font-medium uppercase tracking-[0.08em] text-text-1';
 const tdCls = 'px-3 py-3 text-sm text-text-1';
 
-function scaleLabel(scale: { target: 'rack_count'; capacity: number } | { target: 'power_capacity'; capacity: string }): string {
-  return scale.target === 'rack_count' ? `${fmt(scale.capacity)} 機架` : scale.capacity;
-}
-
 export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
+  const { t, lang } = useI18n();
   const utils = trpc.useUtils();
   const listQuery = trpc.designs.list.useQuery();
   const deleteMutation = trpc.designs.delete.useMutation({
     onSuccess: () => {
-      toast.success('已刪除情境');
+      toast.success(t('generator.toast.deleted'));
       void utils.designs.list.invalidate();
     },
-    onError: (err) => toast.error(`刪除失敗：${err.message}`),
+    onError: (err) => toast.error(tpl(t('generator.toast.deleteError'), { msg: err.message })),
   });
 
   const [search, setSearch] = useState('');
@@ -63,11 +61,18 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
     });
   }, [listQuery.data, search, typeFilter]);
 
+  const scaleLabel = (
+    scale: { target: 'rack_count'; capacity: number } | { target: 'power_capacity'; capacity: string },
+  ): string =>
+    scale.target === 'rack_count'
+      ? tpl(t('generator.scale.racks'), { n: fmt(scale.capacity) })
+      : scale.capacity;
+
   const toggleSelect = (id: number, checked: boolean) => {
     setSelected((prev) => {
       if (checked) {
         if (prev.length >= 3) {
-          toast.warning('最多選擇 3 個情境進行比較');
+          toast.warning(t('generator.saved.maxCompare'));
           return prev;
         }
         return [...prev, id];
@@ -81,9 +86,13 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
       const d = await utils.designs.get.fetch({ id });
       onLoad({ name: d.name, input: d.input as GenerateInput, result: d.result as GenerateResult });
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      toast.success('已載入情境參數');
+      toast.success(t('generator.toast.loaded'));
     } catch (e) {
-      toast.error(`載入失敗：${e instanceof Error ? e.message : '未知錯誤'}`);
+      toast.error(
+        tpl(t('generator.toast.loadError'), {
+          msg: e instanceof Error ? e.message : t('generator.toast.unknownError'),
+        }),
+      );
     }
   };
 
@@ -93,9 +102,13 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
       const snapshot =
         (d.result as GenerateResult | null)?.parameterSnapshot ?? JSON.parse(d.parameterSnapshot ?? '{}');
       await navigator.clipboard.writeText(JSON.stringify(snapshot, null, 2));
-      toast.success('已複製參數快照 JSON');
+      toast.success(t('generator.snapshot.copied'));
     } catch (e) {
-      toast.error(`複製失敗：${e instanceof Error ? e.message : '未知錯誤'}`);
+      toast.error(
+        tpl(t('generator.toast.copyError'), {
+          msg: e instanceof Error ? e.message : t('generator.toast.unknownError'),
+        }),
+      );
     }
   };
 
@@ -111,7 +124,11 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
       setCompared(fetched);
       setCompareOpen(true);
     } catch (e) {
-      toast.error(`比較載入失敗：${e instanceof Error ? e.message : '未知錯誤'}`);
+      toast.error(
+        tpl(t('generator.toast.compareError'), {
+          msg: e instanceof Error ? e.message : t('generator.toast.unknownError'),
+        }),
+      );
     } finally {
       setLoadingCompare(false);
     }
@@ -128,7 +145,7 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <h2 className="flex items-center gap-2.5 text-xl font-bold text-text-0 md:text-2xl">
             <span className="inline-block h-5 w-[3px] rounded-full bg-accent" />
-            已存情境
+            {t('generator.saved.title')}
           </h2>
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
@@ -137,7 +154,7 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="搜尋情境名稱…"
+                placeholder={t('generator.saved.searchPlaceholder')}
                 className="h-9 w-48 rounded-lg border border-line bg-bg-1 pl-8 pr-3 text-sm text-text-0 placeholder:text-text-2 focus:border-accent focus:outline-none"
               />
             </div>
@@ -146,9 +163,9 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
               onChange={(e) => setTypeFilter(e.target.value as 'All' | DatacenterType)}
               className="h-9 rounded-lg border border-line bg-bg-1 px-3 text-sm text-text-1 focus:border-accent focus:outline-none"
             >
-              <option value="All">全部類型</option>
-              {DATACENTER_TYPES.map((t) => (
-                <option key={t} value={t}>{typeLabel(t)}</option>
+              <option value="All">{t('generator.saved.allTypes')}</option>
+              {DATACENTER_TYPES.map((ty) => (
+                <option key={ty} value={ty}>{t(typeLabelKey(ty))}</option>
               ))}
             </select>
             <button
@@ -163,7 +180,7 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
               )}
             >
               <GitCompareArrows className="h-3.5 w-3.5" />
-              比較所選（{selected.length}/3）
+              {tpl(t('generator.saved.compare'), { n: selected.length })}
             </button>
           </div>
         </div>
@@ -177,23 +194,23 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
             </div>
           ) : rows.length === 0 ? (
             <div className="flex flex-col items-center gap-3 p-12 text-center">
-              <img src="/empty-rack.svg" alt="空機架插畫" className="h-28 w-auto opacity-70" />
+              <img src="/empty-rack.svg" alt={t('generator.results.emptyAlt')} className="h-28 w-auto opacity-70" />
               <p className="text-sm text-text-1">
-                {listQuery.data?.length ? '無符合篩選條件的情境' : '尚無已存情境'}
+                {listQuery.data?.length ? t('generator.saved.emptyFiltered') : t('generator.saved.empty')}
               </p>
-              <p className="text-xs text-text-2">產生配置後按「儲存情境」即可在此管理</p>
+              <p className="text-xs text-text-2">{t('generator.saved.emptyHint')}</p>
             </div>
           ) : (
             <table className="w-full min-w-[860px] border-collapse">
               <thead>
                 <tr className="border-b border-line">
-                  <th className={cn(thCls, 'w-10')} aria-label="選取" />
-                  <th className={thCls}>名稱</th>
-                  <th className={thCls}>類型</th>
-                  <th className={thCls}>目標</th>
-                  <th className={thCls}>模型</th>
-                  <th className={thCls}>建立時間</th>
-                  <th className={cn(thCls, 'text-right')}>操作</th>
+                  <th className={cn(thCls, 'w-10')} aria-label={t('generator.saved.colSelect')} />
+                  <th className={thCls}>{t('generator.saved.colName')}</th>
+                  <th className={thCls}>{t('generator.saved.colType')}</th>
+                  <th className={thCls}>{t('generator.saved.colTarget')}</th>
+                  <th className={thCls}>{t('generator.saved.colModel')}</th>
+                  <th className={thCls}>{t('generator.saved.colCreatedAt')}</th>
+                  <th className={cn(thCls, 'text-right')}>{t('generator.saved.colActions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -214,7 +231,7 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
                         <Checkbox
                           checked={checked}
                           onCheckedChange={(v) => toggleSelect(d.id, v === true)}
-                          aria-label={`選取 ${d.name}`}
+                          aria-label={tpl(t('generator.saved.selectRow'), { name: d.name })}
                         />
                       </td>
                       <td className={cn(tdCls, 'max-w-[260px]')}>
@@ -225,17 +242,17 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
                           variant="outline"
                           className={cn('text-[11px] font-normal', TYPE_BADGE_CLASS[d.datacenterUseCase])}
                         >
-                          {typeLabel(d.datacenterUseCase)}
+                          {t(typeLabelKey(d.datacenterUseCase))}
                         </Badge>
                       </td>
                       <td className={cn(tdCls, 'font-mono text-xs')}>{scaleLabel(d.scale)}</td>
                       <td className={cn(tdCls, 'font-mono text-xs')}>{d.model}</td>
-                      <td className={cn(tdCls, 'font-mono text-xs text-text-2')}>{fmtDateTime(d.createdAt)}</td>
+                      <td className={cn(tdCls, 'font-mono text-xs text-text-2')}>{fmtDateTime(d.createdAt, lang)}</td>
                       <td className={cn(tdCls, 'text-right')}>
                         <div className="flex items-center justify-end gap-1">
                           <button
                             type="button"
-                            title="開啟（回填表單並回顯結果）"
+                            title={t('generator.saved.openTitle')}
                             onClick={() => void openDesign(d.id)}
                             className="rounded-md p-1.5 text-text-2 transition-colors hover:bg-bg-1 hover:text-accent"
                           >
@@ -243,7 +260,7 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
                           </button>
                           <button
                             type="button"
-                            title="複製參數快照 JSON"
+                            title={t('generator.saved.copyTitle')}
                             onClick={() => void copyParams(d.id)}
                             className="rounded-md p-1.5 text-text-2 transition-colors hover:bg-bg-1 hover:text-accent"
                           >
@@ -251,7 +268,7 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
                           </button>
                           <button
                             type="button"
-                            title="刪除情境"
+                            title={t('generator.saved.deleteTitle')}
                             onClick={() => setDeleting({ id: d.id, name: d.name })}
                             className="rounded-md p-1.5 text-text-2 transition-colors hover:bg-bg-1 hover:text-red"
                           >
@@ -272,14 +289,14 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
       <AlertDialog open={deleting != null} onOpenChange={(o) => !o && setDeleting(null)}>
         <AlertDialogContent className="border-line bg-bg-1">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-text-0">確認刪除？</AlertDialogTitle>
+            <AlertDialogTitle className="text-text-0">{t('common.deleteConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription className="text-text-1">
-              即將刪除情境 <span className="font-mono text-accent">{deleting?.name}</span>，此操作無法復原。
+              {tpl(t('generator.saved.deleteConfirmDesc'), { name: deleting?.name ?? '' })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="border-line bg-bg-2 text-text-1 hover:bg-bg-3 hover:text-text-0">
-              取消
+              {t('common.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               className="bg-red text-bg-0 hover:bg-red/90"
@@ -291,7 +308,7 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
                 setDeleting(null);
               }}
             >
-              刪除
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
