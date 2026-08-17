@@ -80,7 +80,10 @@ export function convertToKw(powerStr: string): number {
 // ---------------- 二元最小堆（LPT 用） ----------------
 class MinHeap<T> {
   private items: T[] = [];
-  constructor(private key: (t: T) => number) {}
+  private key: (t: T) => number;
+  constructor(key: (t: T) => number) {
+    this.key = key;
+  }
   get size() {
     return this.items.length;
   }
