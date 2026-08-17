@@ -2,17 +2,9 @@ import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import { useI18n } from '@/i18n';
 
 const HeroParticles = lazy(() => import('@/components/home/HeroParticles'));
-
-const TITLE = '用一個平台，生成整座資料中心';
-
-const HERO_STATS: Array<{ value: number; suffix: string; label: string }> = [
-  { value: 65, suffix: '+', label: '設備型錄' },
-  { value: 4, suffix: '', label: '類資料中心' },
-  { value: 19, suffix: '', label: '條內建算法' },
-  { value: 8, suffix: '', label: '類基礎設施' },
-];
 
 function CountUp({ target, start, duration = 1400 }: { target: number; start: boolean; duration?: number }) {
   const [v, setV] = useState(0);
@@ -32,6 +24,7 @@ function CountUp({ target, start, duration = 1400 }: { target: number; start: bo
 }
 
 export default function Hero() {
+  const { t } = useI18n();
   const sectionRef = useRef<HTMLElement>(null);
   const [statsStart, setStatsStart] = useState(false);
   const { scrollYProgress } = useScroll({
@@ -42,16 +35,24 @@ export default function Hero() {
   const contentOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.2]);
 
   useEffect(() => {
-    const t = setTimeout(() => setStatsStart(true), 1000);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setStatsStart(true), 1000);
+    return () => clearTimeout(timer);
   }, []);
+
+  const title = t('home.hero.title');
+  const heroStats: Array<{ value: number; suffix: string; label: string }> = [
+    { value: 65, suffix: '+', label: t('home.hero.stats.equipment') },
+    { value: 4, suffix: '', label: t('home.hero.stats.dcTypes') },
+    { value: 19, suffix: '', label: t('home.hero.stats.algorithms') },
+    { value: 8, suffix: '', label: t('home.hero.stats.infra') },
+  ];
 
   return (
     <section ref={sectionRef} className="relative flex min-h-[92dvh] items-center overflow-hidden">
       {/* Layer 1：背景照片（壓暗至 35%） */}
       <img
         src="/hero-datacenter.jpg"
-        alt="資料中心走廊"
+        alt={t('home.hero.bgAlt')}
         className="absolute inset-0 h-full w-full object-cover brightness-[0.35]"
       />
       {/* Layer 2：Three.js 粒子層 */}
@@ -84,13 +85,13 @@ export default function Hero() {
               DCGen 1.1
             </span>
             <span className="rounded-full border border-line bg-bg-1/60 px-3 py-1 text-xs text-text-1 backdrop-blur">
-              開源 REPO 移植
+              {t('home.hero.badgeRepo')}
             </span>
           </motion.div>
 
-          {/* 主標：中文字元級 stagger */}
+          {/* 主標：字元級 stagger */}
           <h1 className="mt-6 font-sans text-5xl font-black leading-[1.15] tracking-[-0.02em] text-text-0 md:text-7xl">
-            {TITLE.split('').map((ch, i) => (
+            {title.split('').map((ch, i) => (
               <motion.span
                 key={i}
                 className="inline-block"
@@ -98,7 +99,7 @@ export default function Hero() {
                 animate={{ opacity: 1, y: 0, rotate: 0 }}
                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.15 + i * 0.04 }}
               >
-                {ch}
+                {ch === ' ' ? ' ' : ch}
               </motion.span>
             ))}
           </h1>
@@ -109,7 +110,7 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.65 }}
           >
-            IT 機架 × 冷卻 × 配電，從參數到 BOM 一次完成
+            {t('home.hero.subtitle')}
           </motion.p>
 
           <motion.p
@@ -118,8 +119,7 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.8 }}
           >
-            DCGen Web 將 UChicago／Argonne 的 DCGen 模型搬到瀏覽器：內建市售設備型錄（含台達電子
-            UPS／CDU／PDU 全系列）、可調全域參數、可擴充算法註冊表，輸入需求即產出機房空間、功率與設備清單。
+            {t('home.hero.desc')}
           </motion.p>
 
           {/* CTA 列 */}
@@ -133,20 +133,20 @@ export default function Hero() {
               to="/generator"
               className="group inline-flex items-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-medium text-bg-0 shadow-glow transition-all duration-200 hover:scale-[1.02] hover:shadow-glow-strong active:scale-[0.97]"
             >
-              開始產生配置
+              {t('home.cta.start')}
               <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
             <Link
               to="/catalog"
               className="inline-flex items-center gap-2 rounded-lg border border-line bg-bg-1/50 px-6 py-3 text-sm font-medium text-text-0 backdrop-blur transition-all duration-200 hover:scale-[1.02] hover:border-accent/60 hover:text-accent active:scale-[0.97]"
             >
-              瀏覽設備型錄
+              {t('home.hero.ctaCatalog')}
             </Link>
           </motion.div>
 
           {/* 統計條 */}
           <div className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-4">
-            {HERO_STATS.map((s, i) => (
+            {heroStats.map((s, i) => (
               <div key={s.label} className="flex items-center gap-6">
                 {i > 0 && <span className="hidden h-8 w-px bg-line sm:block" />}
                 <div>

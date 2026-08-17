@@ -2,40 +2,43 @@ import { Link } from 'react-router';
 import { motion } from 'framer-motion';
 import { Cpu, Database, SlidersHorizontal, FunctionSquare, ArrowRight } from 'lucide-react';
 import SectionHeading from '@/components/home/SectionHeading';
-
-const CARDS = [
-  {
-    icon: Cpu,
-    title: '配置產生',
-    desc: '選類型、給規模、挑冗餘，一鍵產出空間／功率／設備 BOM，結果可存檔比較。',
-    link: { to: '/generator', label: '前往產生器' },
-  },
-  {
-    icon: Database,
-    title: '資料庫管理',
-    desc: 'IT 參考配置與 8 類非 IT 設備型錄完整 CRUD，規格取自市售產品官方型錄，台達電子全系列在列。',
-    link: { to: '/catalog', label: '瀏覽型錄' },
-  },
-  {
-    icon: SlidersHorizontal,
-    title: '參數管理',
-    desc: '安全餘裕、儲存功率占比、機架 U 數等全域參數即調即用，也可新增自訂參數。',
-    link: { to: '/parameters', label: '調整參數' },
-  },
-  {
-    icon: FunctionSquare,
-    title: '算法管理',
-    desc: '論文式 1–19 公式透明可查、參數可調；自訂算法以安全公式求值器即建即試算。',
-    link: { to: '/algorithms', label: '管理算法' },
-  },
-];
+import { useI18n } from '@/i18n';
 
 export default function Capabilities() {
+  const { t } = useI18n();
+
+  const cards = [
+    {
+      icon: Cpu,
+      title: t('home.capabilities.generator.title'),
+      desc: t('home.capabilities.generator.desc'),
+      link: { to: '/generator', label: t('home.capabilities.generator.link') },
+    },
+    {
+      icon: Database,
+      title: t('home.capabilities.catalog.title'),
+      desc: t('home.capabilities.catalog.desc'),
+      link: { to: '/catalog', label: t('home.capabilities.catalog.link') },
+    },
+    {
+      icon: SlidersHorizontal,
+      title: t('home.capabilities.params.title'),
+      desc: t('home.capabilities.params.desc'),
+      link: { to: '/parameters', label: t('home.capabilities.params.link') },
+    },
+    {
+      icon: FunctionSquare,
+      title: t('home.capabilities.algorithms.title'),
+      desc: t('home.capabilities.algorithms.desc'),
+      link: { to: '/algorithms', label: t('home.capabilities.algorithms.link') },
+    },
+  ];
+
   return (
     <section className="mx-auto max-w-[1400px] px-4 py-10 md:px-8 md:py-16">
-      <SectionHeading title="平台能力" aside="從需求到設備清單的完整工作流" />
+      <SectionHeading title={t('home.capabilities.title')} aside={t('home.capabilities.aside')} />
       <div className="grid gap-5 md:grid-cols-2">
-        {CARDS.map((card, i) => (
+        {cards.map((card, i) => (
           <motion.div
             key={card.title}
             initial={{ opacity: 0, y: 28 }}

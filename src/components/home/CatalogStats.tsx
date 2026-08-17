@@ -4,64 +4,68 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import { Database, Factory, Server, SlidersHorizontal, ArrowRight } from 'lucide-react';
 import SectionHeading from '@/components/home/SectionHeading';
 import StatCard from '@/components/StatCard';
-
-// 靜態假資料（後續接 tRPC 聚合）
-const CATEGORY_DATA = [
-  { name: 'CDU 冷卻分配', count: 11, vendor: 'Delta／Vertiv', hasDelta: true },
-  { name: 'Chillers 冰水機', count: 9, vendor: 'Carrier／Trane', hasDelta: false },
-  { name: 'Dry Coolers 乾冷卻器', count: 7, vendor: 'Evapco／BAC', hasDelta: false },
-  { name: 'Evap. Towers 冷卻水塔', count: 6, vendor: 'Evapco／SPX', hasDelta: false },
-  { name: 'PDUs 配電單元', count: 8, vendor: 'Delta／Schneider', hasDelta: true },
-  { name: 'UPSs 不斷電系統', count: 12, vendor: 'Delta／Vertiv', hasDelta: true },
-  { name: 'MSBs 主開關盤', count: 5, vendor: 'Schneider／ABB', hasDelta: false },
-  { name: 'Backup Gen. 發電機', count: 7, vendor: 'Cummins／CAT', hasDelta: false },
-];
+import { useI18n, tpl } from '@/i18n';
 
 const CHART_COLORS = ['#22D3EE', '#38BDF8', '#A78BFA', '#F59E0B', '#34D399', '#64748B'];
 
 function DeltaDot() {
+  const { t } = useI18n();
   return (
     <span
       className="ml-1.5 inline-block h-1.5 w-1.5 animate-led-breathe rounded-full bg-green align-middle"
-      title="含台達電子產品"
+      title={t('home.stats.deltaDot')}
     />
   );
 }
 
 export default function CatalogStats() {
+  const { t } = useI18n();
+
+  // 靜態假資料（後續接 tRPC 聚合）
+  const categoryData = [
+    { name: t('home.stats.cat.cdu'), count: 11, vendor: 'Delta／Vertiv', hasDelta: true },
+    { name: t('home.stats.cat.chiller'), count: 9, vendor: 'Carrier／Trane', hasDelta: false },
+    { name: t('home.stats.cat.drycooler'), count: 7, vendor: 'Evapco／BAC', hasDelta: false },
+    { name: t('home.stats.cat.tower'), count: 6, vendor: 'Evapco／SPX', hasDelta: false },
+    { name: t('home.stats.cat.pdu'), count: 8, vendor: 'Delta／Schneider', hasDelta: true },
+    { name: t('home.stats.cat.ups'), count: 12, vendor: 'Delta／Vertiv', hasDelta: true },
+    { name: t('home.stats.cat.msb'), count: 5, vendor: 'Schneider／ABB', hasDelta: false },
+    { name: t('home.stats.cat.gen'), count: 7, vendor: 'Cummins／CAT', hasDelta: false },
+  ];
+
   return (
     <section className="border-y border-line bg-bg-1/50">
       <div className="mx-auto max-w-[1400px] px-4 py-10 md:px-8 md:py-16">
         <SectionHeading
-          title="設備型錄現況"
-          subtitle="規格取自各廠商官方型錄與資料表，每筆附來源連結"
+          title={t('home.stats.title')}
+          subtitle={t('home.stats.subtitle')}
         />
 
         {/* 第一列：4 張 StatCard */}
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            label="設備總數"
+            label={t('home.stats.total')}
             value={65}
             variant="accent"
             icon={<Database className="h-4 w-4" />}
-            hint="8 類非 IT 基礎設備"
+            hint={t('home.stats.totalHint')}
             delay={0}
           />
           <StatCard
-            label="收錄廠商數"
+            label={t('home.stats.vendors')}
             value={18}
             variant="green"
             icon={<Factory className="h-4 w-4" />}
             hint={
               <span className="inline-flex items-center gap-1.5">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-green" />
-                含台達電子 Delta
+                {t('home.stats.vendorsHint')}
               </span>
             }
             delay={0.07}
           />
           <StatCard
-            label="IT 參考配置數"
+            label={t('home.stats.itConfigs')}
             value={24}
             variant="cool"
             icon={<Server className="h-4 w-4" />}
@@ -69,11 +73,11 @@ export default function CatalogStats() {
             delay={0.14}
           />
           <StatCard
-            label="全域參數數"
+            label={t('home.stats.params')}
             value={22}
             variant="power"
             icon={<SlidersHorizontal className="h-4 w-4" />}
-            hint="可調整、可新增自訂"
+            hint={t('home.stats.paramsHint')}
             delay={0.21}
           />
         </div>
@@ -88,15 +92,15 @@ export default function CatalogStats() {
             transition={{ duration: 0.5, ease: 'easeOut' }}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-base font-medium text-text-0">八類設備分佈</h3>
+              <h3 className="text-base font-medium text-text-0">{t('home.stats.chartTitle')}</h3>
               <span className="flex items-center text-xs text-text-2">
                 <DeltaDot />
-                含台達產品
+                {t('home.stats.deltaLegend')}
               </span>
             </div>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={CATEGORY_DATA} layout="vertical" margin={{ left: 8, right: 40 }}>
+                <BarChart data={categoryData} layout="vertical" margin={{ left: 8, right: 40 }}>
                   <XAxis type="number" hide />
                   <YAxis
                     type="category"
@@ -116,12 +120,15 @@ export default function CatalogStats() {
                     }}
                     labelStyle={{ color: '#F1F5F9' }}
                     formatter={(value, _name, item) => [
-                      `${value} 款 · 代表廠商：${(item.payload as (typeof CATEGORY_DATA)[number]).vendor}`,
-                      '收錄筆數',
+                      tpl(t('home.stats.tooltip'), {
+                        count: Number(value),
+                        vendor: (item.payload as (typeof categoryData)[number]).vendor,
+                      }),
+                      t('home.stats.tooltipName'),
                     ]}
                   />
                   <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={16} animationDuration={800}>
-                    {CATEGORY_DATA.map((entry, i) => (
+                    {categoryData.map((entry, i) => (
                       <Cell key={entry.name} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
                   </Bar>
@@ -129,7 +136,7 @@ export default function CatalogStats() {
               </ResponsiveContainer>
             </div>
             <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs text-text-2">
-              {CATEGORY_DATA.filter((c) => c.hasDelta).map((c) => (
+              {categoryData.filter((c) => c.hasDelta).map((c) => (
                 <span key={c.name} className="inline-flex items-center">
                   {c.name}
                   <DeltaDot />
@@ -148,13 +155,13 @@ export default function CatalogStats() {
           >
             <div className="flex items-center gap-2.5">
               <span className="inline-block h-2.5 w-2.5 animate-led-breathe rounded-full bg-green" />
-              <h3 className="text-base font-medium text-text-0">焦點供應商：台達電子</h3>
+              <h3 className="text-base font-medium text-text-0">{t('home.delta.title')}</h3>
               <span className="rounded-full border border-green/40 bg-green/10 px-2 py-0.5 font-mono text-xs text-green">
                 Delta
               </span>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-text-1">
-              Modulon DPH／Ultron UPS 11 款、GoCool 液冷 CDU 11 款、rPDU／PDC 配電 5 款已收錄。
+              {t('home.delta.desc')}
             </p>
             <div className="mt-5 grid grid-cols-3 gap-3">
               <div className="rounded-lg border border-line bg-bg-1 p-3">
@@ -167,14 +174,14 @@ export default function CatalogStats() {
               </div>
               <div className="rounded-lg border border-line bg-bg-1 p-3">
                 <div className="font-mono text-sm font-bold text-text-0">96.5–97.5%</div>
-                <div className="mt-0.5 text-xs text-text-2">效率</div>
+                <div className="mt-0.5 text-xs text-text-2">{t('home.delta.efficiency')}</div>
               </div>
             </div>
             <Link
               to="/catalog?vendor=Delta"
               className="mt-5 inline-flex items-center gap-1.5 text-sm text-accent transition-colors hover:text-cool"
             >
-              在型錄中檢視台達產品
+              {t('home.delta.link')}
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </motion.div>
