@@ -12,8 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { tpl, useI18n } from '@/i18n';
 import type { AlgoItem, ParamOption } from './types';
-import { algoCategoryMeta, extractVariables, parseBindings } from './types';
+import { algoCategoryLabel, algoCategoryMeta, extractVariables, parseBindings } from './types';
 import FormulaText from './FormulaText';
 import TestPanel from './TestPanel';
 
@@ -67,6 +68,7 @@ export default function AlgorithmDetail({
   onRequestDelete,
   onRequestEdit,
 }: AlgorithmDetailProps) {
+  const { t } = useI18n();
   const bindings = useMemo(() => parseBindings(algo.parameterBindings), [algo.parameterBindings]);
   const variables = useMemo(() => extractVariables(algo.formula), [algo.formula]);
   const meta = algoCategoryMeta(algo.category);
@@ -84,7 +86,7 @@ export default function AlgorithmDetail({
       await onUpdate(algo.key, data);
       if (toastMsg) toast.success(toastMsg);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '更新失敗');
+      toast.error(e instanceof Error ? e.message : t('algos.err.updateFailed'));
     } finally {
       setSaving(false);
     }
@@ -94,15 +96,15 @@ export default function AlgorithmDetail({
     const next = { ...bindings };
     if (paramKey === MANUAL) delete next[variable];
     else next[variable] = paramKey;
-    void save({ parameterBindings: next }, '算法已更新（內建算法修改僅影響後續演算）');
+    void save({ parameterBindings: next }, t('algos.toast.updated'));
   };
 
-  const copyText = async (text: string, label: string) => {
+  const copyText = async (text: string, toastKey: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success(`已複製${label}`);
+      toast.success(t(toastKey));
     } catch {
-      toast.error('複製失敗（瀏覽器未授權剪貼簿）');
+      toast.error(t('algos.toast.copyFailed'));
     }
   };
 
@@ -126,34 +128,34 @@ export default function AlgorithmDetail({
             v{algo.version}
           </span>
           <span className={cn('rounded-full border border-line bg-bg-1 px-2 py-0.5 text-[10px] tracking-[0.08em]', meta.color)}>
-            {algo.category}
+            {algoCategoryLabel(t, algo.category)}
           </span>
           {algo.isBuiltin ? (
             <span className="rounded-full border border-accent/50 bg-accent/10 px-2 py-0.5 text-[10px] tracking-[0.08em] text-accent">
-              內建
+              {t('algos.badge.builtin')}
             </span>
           ) : (
             <span className="rounded-full border border-violet/50 bg-violet/10 px-2 py-0.5 text-[10px] tracking-[0.08em] text-violet">
-              自訂
+              {t('algos.badge.custom')}
             </span>
           )}
           {modified && (
             <span className="rounded-full border border-power/50 bg-power/10 px-2 py-0.5 text-[10px] tracking-[0.08em] text-power">
-              已修改
+              {t('algos.badge.modified')}
             </span>
           )}
           {!algo.enabled && (
             <span className="rounded-full border border-line bg-bg-1 px-2 py-0.5 text-[10px] tracking-[0.08em] text-text-2">
-              已停用
+              {t('algos.badge.disabled')}
             </span>
           )}
           <span className="ml-auto flex items-center gap-2">
-            <span className="text-xs text-text-2">{algo.enabled ? '啟用中' : '已停用'}</span>
+            <span className="text-xs text-text-2">{algo.enabled ? t('algos.detail.enabled') : t('algos.detail.disabled')}</span>
             <Switch
               checked={algo.enabled}
               disabled={saving}
               onCheckedChange={(checked) =>
-                void save({ enabled: checked }, checked ? '算法已啟用' : '算法已停用（後續演算將略過）')
+                void save({ enabled: checked }, checked ? t('algos.toast.enabled') : t('algos.toast.disabled'))
               }
             />
           </span>
@@ -173,12 +175,12 @@ export default function AlgorithmDetail({
                 size="sm"
                 disabled={saving}
                 onClick={() => {
-                  void save({ description: descDraft.trim() || null }, '說明已更新').then(() => setEditingDesc(false));
+                  void save({ description: descDraft.trim() || null }, t('algos.toast.descUpdated')).then(() => setEditingDesc(false));
                 }}
                 className="bg-accent text-bg-0 hover:bg-accent/90"
               >
                 <Check className="h-3.5 w-3.5" />
-                儲存說明
+                {t('algos.detail.saveDesc')}
               </Button>
               <Button
                 size="sm"
@@ -187,13 +189,13 @@ export default function AlgorithmDetail({
                 className="border-line bg-transparent text-text-1 hover:bg-bg-2 hover:text-text-0"
               >
                 <X className="h-3.5 w-3.5" />
-                取消
+                {t('common.cancel')}
               </Button>
             </div>
           </div>
         ) : (
           <p className="mt-3 text-sm leading-relaxed text-text-1">
-            {algo.description ?? '（尚無說明）'}
+            {algo.description ?? t('algos.detail.noDesc')}
             <button
               type="button"
               onClick={() => {
@@ -203,7 +205,7 @@ export default function AlgorithmDetail({
               className="ml-2 inline-flex items-center gap-1 rounded-md border border-line bg-bg-1 px-1.5 py-0.5 text-xs text-text-2 transition-colors hover:border-accent/50 hover:text-accent"
             >
               <Pencil className="h-3 w-3" />
-              調整
+              {t('algos.detail.editDesc')}
             </button>
           </p>
         )}
@@ -212,23 +214,23 @@ export default function AlgorithmDetail({
       {/* (b) 公式展示卡 */}
       <div className="rounded-lg border border-line bg-bg-1 p-5 md:p-6">
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-xs font-medium uppercase tracking-[0.08em] text-text-2">公式</span>
+          <span className="text-xs font-medium uppercase tracking-[0.08em] text-text-2">{t('algos.detail.formula')}</span>
           <div className="flex gap-1.5">
             <button
               type="button"
-              onClick={() => void copyText(display, ' LaTeX')}
+              onClick={() => void copyText(display, 'algos.toast.copiedLatex')}
               className="flex items-center gap-1 rounded-md border border-line bg-bg-2 px-2 py-1 text-xs text-text-1 transition-colors hover:border-accent/50 hover:text-accent"
             >
               <Copy className="h-3 w-3" />
-              複製 LaTeX
+              {t('algos.detail.copyLatex')}
             </button>
             <button
               type="button"
-              onClick={() => void copyText(algo.formula ?? '', '純文字公式')}
+              onClick={() => void copyText(algo.formula ?? '', 'algos.toast.copiedPlain')}
               className="flex items-center gap-1 rounded-md border border-line bg-bg-2 px-2 py-1 text-xs text-text-1 transition-colors hover:border-accent/50 hover:text-accent"
             >
               <Copy className="h-3 w-3" />
-              複製純文字
+              {t('algos.detail.copyPlain')}
             </button>
           </div>
         </div>
@@ -237,13 +239,13 @@ export default function AlgorithmDetail({
             <CharFade text={display} className="whitespace-pre-wrap text-base leading-relaxed md:text-lg" />
           </div>
         ) : (
-          <p className="text-sm text-text-2">此算法為啟發式實作（LPT 裝箱），無封閉公式。</p>
+          <p className="text-sm text-text-2">{t('algos.detail.heuristic')}</p>
         )}
 
         {/* 變數表 */}
         {variables.length > 0 && (
           <div className="mt-4">
-            <div className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-2">變數</div>
+            <div className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-2">{t('algos.detail.variables')}</div>
             <div className="divide-y divide-line rounded-lg border border-line">
               {variables.map((v) => {
                 const boundKey = bindings[v];
@@ -256,15 +258,15 @@ export default function AlgorithmDetail({
                     </span>
                     {boundKey ? (
                       <span className="rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 font-mono text-[10px] text-accent">
-                        全域參數 {boundKey}
+                        {tpl(t('algos.detail.boundParam'), { key: boundKey })}
                       </span>
                     ) : paramMap.has(v) ? (
                       <span className="rounded-full border border-line bg-bg-1 px-2 py-0.5 font-mono text-[10px] text-text-1">
-                        全域參數 {v}（同名自動帶入）
+                        {tpl(t('algos.detail.sameNameParam'), { key: v })}
                       </span>
                     ) : (
                       <span className="rounded-full border border-line bg-bg-1 px-2 py-0.5 text-[10px] tracking-[0.08em] text-text-2">
-                        使用者輸入
+                        {t('algos.detail.userInput')}
                       </span>
                     )}
                   </div>
@@ -279,8 +281,8 @@ export default function AlgorithmDetail({
       {variables.length > 0 && (
         <div className="rounded-xl border border-line bg-bg-2 p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-medium text-text-0">參數綁定（可調整）</h3>
-            <span className="text-xs text-text-2">將公式變數改綁其他全域參數</span>
+            <h3 className="text-sm font-medium text-text-0">{t('algos.detail.bindings')}</h3>
+            <span className="text-xs text-text-2">{t('algos.detail.bindingsHint')}</span>
           </div>
           <div className="divide-y divide-line rounded-lg border border-line bg-bg-1">
             {variables.map((v) => {
@@ -290,7 +292,12 @@ export default function AlgorithmDetail({
                 <div key={v} className="flex flex-wrap items-center gap-3 px-3 py-2.5">
                   <span className="w-32 shrink-0 font-mono text-sm text-accent">{v}</span>
                   <span className="font-mono text-xs text-text-2">
-                    {bound ? `現值 ${bound.value}${bound.unit ? ` ${bound.unit}` : ''}` : '手動輸入'}
+                    {bound
+                      ? tpl(t('algos.detail.currentValue'), {
+                          value: bound.value,
+                          unit: bound.unit ? ` ${bound.unit}` : '',
+                        })
+                      : t('algos.detail.manual')}
                   </span>
                   <div className="ml-auto flex items-center gap-2">
                     <Select
@@ -303,7 +310,7 @@ export default function AlgorithmDetail({
                       </SelectTrigger>
                       <SelectContent className="max-h-64 border-line bg-bg-1">
                         <SelectItem value={MANUAL} className="text-text-0 focus:bg-bg-3 focus:text-text-0">
-                          手動輸入（不綁定）
+                          {t('algos.detail.manualOption')}
                         </SelectItem>
                         {paramOptions.map((p) => (
                           <SelectItem key={p.key} value={p.key} className="text-text-0 focus:bg-bg-3 focus:text-text-0">
@@ -315,7 +322,7 @@ export default function AlgorithmDetail({
                     </Select>
                     <button
                       type="button"
-                      aria-label={`還原變數 ${v} 的綁定`}
+                      aria-label={tpl(t('algos.detail.resetBindingAria'), { var: v })}
                       disabled={saving || current === MANUAL}
                       onClick={() => changeBinding(v, MANUAL)}
                       className="rounded-lg border border-line bg-bg-2 p-1.5 text-text-1 transition-colors hover:border-accent/50 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
@@ -335,7 +342,7 @@ export default function AlgorithmDetail({
         <TestPanel formula={algo.formula} bindings={bindings} paramMap={paramMap} />
       ) : (
         <div className="rounded-xl border border-line bg-bg-2 p-5 text-sm text-text-2">
-          此算法為啟發式實作，無法以公式試算。
+          {t('algos.detail.heuristicTest')}
         </div>
       )}
 
@@ -348,7 +355,7 @@ export default function AlgorithmDetail({
             className="border-accent/40 bg-transparent text-accent hover:bg-accent/10 hover:text-accent"
           >
             <Copy className="h-4 w-4" />
-            複製為自訂算法
+            {t('algos.detail.duplicate')}
           </Button>
         ) : (
           <>
@@ -358,7 +365,7 @@ export default function AlgorithmDetail({
               className="border-line bg-transparent text-text-1 hover:bg-bg-2 hover:text-text-0"
             >
               <Pencil className="h-4 w-4" />
-              編輯定義
+              {t('algos.detail.edit')}
             </Button>
             <Button
               variant="outline"
@@ -366,7 +373,7 @@ export default function AlgorithmDetail({
               className="border-line bg-transparent text-text-1 hover:bg-bg-2 hover:text-text-0"
             >
               <Copy className="h-4 w-4" />
-              複製
+              {t('algos.detail.copy')}
             </Button>
             <Button
               variant="outline"
@@ -374,7 +381,7 @@ export default function AlgorithmDetail({
               className="border-red/40 bg-transparent text-red hover:bg-red/10 hover:text-red"
             >
               <Trash2 className="h-4 w-4" />
-              刪除
+              {t('common.delete')}
             </Button>
           </>
         )}

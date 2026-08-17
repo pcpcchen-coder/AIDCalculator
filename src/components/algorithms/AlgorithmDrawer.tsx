@@ -22,8 +22,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { tpl, useI18n } from '@/i18n';
 import type { AlgoItem, ParamOption } from './types';
-import { ALGO_KEY_PATTERN, extractVariables, parseBindings, sortAlgoCategories } from './types';
+import { ALGO_KEY_PATTERN, algoCategoryLabel, extractVariables, parseBindings, sortAlgoCategories } from './types';
 import FormulaText from './FormulaText';
 import TestPanel from './TestPanel';
 
@@ -58,6 +59,7 @@ export default function AlgorithmDrawer({
   paramMap,
   onSaved,
 }: AlgorithmDrawerProps) {
+  const { t } = useI18n();
   const utils = trpc.useUtils();
   const isEdit = !!algo;
 
@@ -97,7 +99,7 @@ export default function AlgorithmDrawer({
   const syntaxOk = debouncedFormula.trim().length > 0 && validateQuery.data?.ok === true;
   const syntaxError =
     debouncedFormula.trim().length > 0 && validateQuery.data && !validateQuery.data.ok
-      ? validateQuery.data.error ?? '語法錯誤'
+      ? validateQuery.data.error ?? t('algos.drawer.syntaxError')
       : null;
   const formulaVariables = useMemo(
     () => (syntaxOk ? validateQuery.data?.variables ?? extractVariables(formula) : []),
@@ -106,10 +108,10 @@ export default function AlgorithmDrawer({
 
   const keyError = useMemo(() => {
     if (isEdit || !key) return null;
-    if (!ALGO_KEY_PATTERN.test(key)) return 'key 僅能包含英數與底線，且不得以數字開頭';
-    if (existingKeys.includes(key)) return '此 key 已存在';
+    if (!ALGO_KEY_PATTERN.test(key)) return t('algos.err.keyPattern');
+    if (existingKeys.includes(key)) return t('algos.err.keyExists');
     return null;
-  }, [isEdit, key, existingKeys]);
+  }, [isEdit, key, existingKeys, t]);
 
   const formulaChanged = isEdit && algo ? formula !== (algo.formula ?? '') : true;
   const canSubmit =
@@ -169,7 +171,7 @@ export default function AlgorithmDrawer({
             parameterBindings: cleanBindings,
           },
         });
-        toast.success('算法已更新');
+        toast.success(t('algos.drawer.toastUpdated'));
         onSaved(algo.key, 'edit');
       } else {
         await createMut.mutateAsync({
@@ -180,12 +182,12 @@ export default function AlgorithmDrawer({
           formula,
           parameterBindings: cleanBindings,
         });
-        toast.success('自訂算法已新增');
+        toast.success(t('algos.drawer.toastCreated'));
         onSaved(key.trim(), 'create');
       }
       onOpenChange(false);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '儲存失敗');
+      toast.error(e instanceof Error ? e.message : t('algos.drawer.saveFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -198,10 +200,11 @@ export default function AlgorithmDrawer({
         className="w-full overflow-y-auto border-l border-line bg-bg-1 sm:max-w-[520px]"
       >
         <SheetHeader>
-          <SheetTitle className="text-text-0">{isEdit ? '編輯自訂算法' : '新增自訂算法'}</SheetTitle>
+          <SheetTitle className="text-text-0">{isEdit ? t('algos.drawer.titleEdit') : t('algos.drawer.titleCreate')}</SheetTitle>
           <SheetDescription className="text-text-1">
-            公式由安全求值器解析：支援 + − × ÷、括號、冪 ^、sqrt/min/max/ceil/floor 函數，以及全域參數
-            key 引用（如 <code className="font-mono text-accent">storage_power_share</code>）。
+            {t('algos.drawer.descA')}
+            <code className="font-mono text-accent">storage_power_share</code>
+            {t('algos.drawer.descB')}
           </SheetDescription>
         </SheetHeader>
 
@@ -210,13 +213,13 @@ export default function AlgorithmDrawer({
           {!isEdit && (
             <motion.div {...fieldMotion(0)} className="flex flex-col gap-1.5">
               <Label htmlFor="algo-key" className="text-text-1">
-                Key <span className="text-red">*</span>
+                {t('algos.drawer.key')} <span className="text-red">*</span>
               </Label>
               <Input
                 id="algo-key"
                 value={key}
                 onChange={(e) => setKey(e.target.value)}
-                placeholder="如 my_storage_estimate"
+                placeholder={t('algos.drawer.keyPlaceholder')}
                 className={cn(
                   'border-line bg-bg-0 font-mono text-text-0 placeholder:text-text-2',
                   keyError && 'border-red',
@@ -225,7 +228,7 @@ export default function AlgorithmDrawer({
               {keyError ? (
                 <p className="text-xs text-red">{keyError}</p>
               ) : (
-                <p className="text-xs text-text-2">英數與底線，建立後不可變更</p>
+                <p className="text-xs text-text-2">{t('algos.drawer.keyHint')}</p>
               )}
             </motion.div>
           )}
@@ -234,26 +237,26 @@ export default function AlgorithmDrawer({
           <motion.div {...fieldMotion(1)} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="algo-name" className="text-text-1">
-                名稱 <span className="text-red">*</span>
+                {t('algos.drawer.name')} <span className="text-red">*</span>
               </Label>
               <Input
                 id="algo-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="如：儲存節點功耗估算"
+                placeholder={t('algos.drawer.namePlaceholder')}
                 className="border-line bg-bg-0 text-text-0 placeholder:text-text-2"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label className="text-text-1">分類</Label>
+              <Label className="text-text-1">{t('algos.drawer.category')}</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger className="border-line bg-bg-0 text-text-0">
-                  <SelectValue placeholder="選擇分類" />
+                  <SelectValue placeholder={t('algos.drawer.categoryPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="border-line bg-bg-1">
                   {allCategories.map((c) => (
                     <SelectItem key={c} value={c} className="text-text-0 focus:bg-bg-3 focus:text-text-0">
-                      {c}
+                      {algoCategoryLabel(t, c)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -263,30 +266,30 @@ export default function AlgorithmDrawer({
 
           <motion.div {...fieldMotion(2)} className="flex flex-col gap-1.5">
             <Label htmlFor="algo-desc" className="text-text-1">
-              說明（選填）
+              {t('algos.drawer.description')}
             </Label>
             <Textarea
               id="algo-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="算法用途、適用情境、參考來源等"
+              placeholder={t('algos.drawer.descPlaceholder')}
               rows={2}
               className="border-line bg-bg-0 text-text-0 placeholder:text-text-2"
             />
-            <p className="text-xs text-text-2">版本：v{algo?.version ?? '1.0'}（儲存時自動升版）</p>
+            <p className="text-xs text-text-2">{tpl(t('algos.drawer.versionNote'), { version: algo?.version ?? '1.0' })}</p>
           </motion.div>
 
           {/* 公式編輯器 */}
           <motion.div {...fieldMotion(3)} className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="algo-formula" className="text-text-1">
-                公式 <span className="text-red">*</span>
+                {t('algos.drawer.formula')} <span className="text-red">*</span>
               </Label>
               {/* 插入參數 */}
               <Select onValueChange={insertParam}>
                 <SelectTrigger className="h-7 w-36 border-line bg-bg-0 text-xs text-text-1">
                   <CornerDownLeft className="h-3 w-3" />
-                  <SelectValue placeholder="插入參數" />
+                  <SelectValue placeholder={t('algos.drawer.insertParam')} />
                 </SelectTrigger>
                 <SelectContent className="max-h-64 border-line bg-bg-1">
                   {paramOptions.map((p) => (
@@ -320,16 +323,16 @@ export default function AlgorithmDrawer({
               className="min-h-5"
             >
               {debouncedFormula.trim() === '' ? (
-                <p className="text-xs text-text-2">輸入公式後即時檢查語法</p>
+                <p className="text-xs text-text-2">{t('algos.drawer.validateIdle')}</p>
               ) : validateQuery.isFetching ? (
-                <p className="text-xs text-text-2">檢查中…</p>
+                <p className="text-xs text-text-2">{t('algos.drawer.validating')}</p>
               ) : syntaxOk ? (
                 <p className="flex items-center gap-1.5 text-xs text-green">
                   <CircleCheck className="h-3.5 w-3.5" />
-                  ✓ 語法正確
+                  {t('algos.drawer.validateOk')}
                   {formulaVariables.length > 0 && (
                     <span className="text-text-2">
-                      ｜可用變數：
+                      {t('algos.drawer.validateVars')}
                       {formulaVariables.map((v) => (
                         <FormulaText key={v} text={v} className="mx-0.5" />
                       ))}
@@ -348,7 +351,7 @@ export default function AlgorithmDrawer({
           {/* 變數綁定宣告（由公式自動推導） */}
           {formulaVariables.length > 0 && (
             <motion.div {...fieldMotion(4)} className="flex flex-col gap-1.5">
-              <Label className="text-text-1">變數來源（可綁定全域參數）</Label>
+              <Label className="text-text-1">{t('algos.drawer.varSources')}</Label>
               <div className="divide-y divide-line rounded-lg border border-line bg-bg-0">
                 {formulaVariables.map((v) => {
                   const boundKey = bindings[v];
@@ -375,7 +378,7 @@ export default function AlgorithmDrawer({
                         </SelectTrigger>
                         <SelectContent className="max-h-64 border-line bg-bg-1">
                           <SelectItem value={MANUAL} className="text-text-0 focus:bg-bg-3 focus:text-text-0">
-                            手動輸入
+                            {t('algos.detail.manual')}
                           </SelectItem>
                           {paramOptions.map((p) => (
                             <SelectItem key={p.key} value={p.key} className="text-text-0 focus:bg-bg-3 focus:text-text-0">
@@ -405,16 +408,16 @@ export default function AlgorithmDrawer({
               onClick={() => onOpenChange(false)}
               className="border-line bg-transparent text-text-1 hover:bg-bg-2 hover:text-text-0"
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               disabled={!canSubmit}
-              title={!syntaxOk && formulaChanged ? '公式語法錯誤時無法儲存' : undefined}
+              title={!syntaxOk && formulaChanged ? t('algos.drawer.saveDisabledHint') : undefined}
               onClick={() => void handleSubmit()}
               className="bg-accent text-bg-0 hover:bg-accent/90 hover:shadow-glow"
             >
               <Check className="h-4 w-4" />
-              {submitting ? '儲存中…' : '儲存算法'}
+              {submitting ? t('algos.drawer.saving') : t('algos.drawer.save')}
             </Button>
           </motion.div>
         </div>

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { FlaskConical, Play, TriangleAlert } from 'lucide-react';
 import { trpc } from '@/providers/trpc';
 import { cn } from '@/lib/utils';
+import { tpl, useI18n } from '@/i18n';
 import { Button } from '@/components/ui/button';
 import type { ParamOption } from './types';
 import { extractVariables } from './types';
@@ -23,6 +24,7 @@ interface TestPanelProps {
 
 /** 試算面板：動態產生變數輸入 → algorithms.test → 結果＋代入過程 */
 export default function TestPanel({ formula, bindings, paramMap, compact }: TestPanelProps) {
+  const { t } = useI18n();
   const variables = useMemo(() => extractVariables(formula), [formula]);
   const [inputs, setInputs] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState(false);
@@ -61,12 +63,12 @@ export default function TestPanel({ formula, bindings, paramMap, compact }: Test
         <span className="rounded-lg border border-line bg-bg-1 p-2 text-accent">
           <FlaskConical className="h-4 w-4" />
         </span>
-        <h3 className="text-sm font-medium text-text-0">試算面板</h3>
-        <span className="text-xs text-text-2">同名全域參數已自動帶入，可覆寫</span>
+        <h3 className="text-sm font-medium text-text-0">{t('algos.test.title')}</h3>
+        <span className="text-xs text-text-2">{t('algos.test.prefillHint')}</span>
       </div>
 
       {variables.length === 0 ? (
-        <p className="text-sm text-text-2">此公式無自由變數，可直接試算。</p>
+        <p className="text-sm text-text-2">{t('algos.test.noVars')}</p>
       ) : (
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           {variables.map((v) => {
@@ -80,7 +82,7 @@ export default function TestPanel({ formula, bindings, paramMap, compact }: Test
                   <span className="font-mono text-accent">{v}</span>
                   {src && (
                     <span className="rounded-full border border-line bg-bg-1 px-1.5 py-0.5 font-mono text-[10px] text-text-2">
-                      參數 {src}
+                      {tpl(t('algos.test.paramBadge'), { key: src })}
                     </span>
                   )}
                 </span>
@@ -91,7 +93,7 @@ export default function TestPanel({ formula, bindings, paramMap, compact }: Test
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && missing.length === 0) runTest();
                     }}
-                    placeholder="輸入數值"
+                    placeholder={t('algos.test.inputPlaceholder')}
                     inputMode="decimal"
                     className={cn(
                       'w-full rounded-lg border bg-bg-1 px-3 py-2 font-mono text-sm text-text-0 outline-none transition-shadow placeholder:text-text-2 focus:shadow-[0_0_0_3px_rgba(34,211,238,0.15)]',
@@ -113,11 +115,11 @@ export default function TestPanel({ formula, bindings, paramMap, compact }: Test
           className="bg-accent text-bg-0 transition-all hover:scale-[1.02] hover:shadow-glow active:scale-[0.97]"
         >
           <Play className="h-4 w-4" />
-          {testMut.isPending ? '計算中…' : '試算'}
+          {testMut.isPending ? t('algos.test.running') : t('algos.test.run')}
         </Button>
         {touched && missing.length > 0 && (
           <span className="text-xs text-power">
-            尚缺變數：{missing.map((m) => <code key={m} className="mx-0.5 font-mono">{m}</code>)}
+            {t('algos.test.missing')}{missing.map((m) => <code key={m} className="mx-0.5 font-mono">{m}</code>)}
           </span>
         )}
       </div>
@@ -142,7 +144,7 @@ export default function TestPanel({ formula, bindings, paramMap, compact }: Test
             exit={{ opacity: 0 }}
             className="mt-3 rounded-lg border border-accent/30 bg-bg-1 px-4 py-3"
           >
-            <div className="text-xs text-text-2">計算結果</div>
+            <div className="text-xs text-text-2">{t('algos.test.result')}</div>
             <motion.div
               initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
