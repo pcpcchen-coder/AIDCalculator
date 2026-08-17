@@ -156,7 +156,7 @@ export default function LayoutStudio() {
           <div className={cn(tab !== 'floorplan' && 'hidden')}>
             <FloorPlan model={model} />
           </div>
-          <div className={cn(tab !== 'scene3d' && 'hidden')}>
+          <div className={cn(tab !== 'scene3d' && 'hidden', 'h-[calc(100vh-230px)] min-h-[640px]')}>
             <DatacenterScene model={model} />
           </div>
           <div className={cn(tab !== 'electrical' && 'hidden')}>
