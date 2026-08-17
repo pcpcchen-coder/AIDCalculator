@@ -2,19 +2,21 @@
 
 export interface DocSectionMeta {
   id: string;
-  label: string;
+  /** i18n key（docs.nav.*），由 SectionNav 以 t() 取譯 */
+  labelKey: string;
 }
 
 /** 章節錨點清單（scroll-spy 導覽順序） */
 export const DOC_SECTIONS: DocSectionMeta[] = [
-  { id: 'overview', label: '模型概覽' },
-  { id: 'dc-types', label: '四種資料中心類型' },
-  { id: 'cooling', label: '冷卻鏈' },
-  { id: 'power', label: '配電鏈' },
-  { id: 'redundancy', label: '冗餘語彙' },
-  { id: 'param-layers', label: '參數三層架構' },
-  { id: 'sources', label: '資料來源' },
-  { id: 'citation', label: '引用' },
+  { id: 'overview', labelKey: 'docs.nav.overview' },
+  { id: 'dc-types', labelKey: 'docs.nav.dcTypes' },
+  { id: 'cooling', labelKey: 'docs.nav.cooling' },
+  { id: 'power', labelKey: 'docs.nav.power' },
+  { id: 'redundancy', labelKey: 'docs.nav.redundancy' },
+  { id: 'param-layers', labelKey: 'docs.nav.paramLayers' },
+  { id: 'sources', labelKey: 'docs.nav.sources' },
+  { id: 'manual', labelKey: 'docs.nav.manual' },
+  { id: 'citation', labelKey: 'docs.nav.citation' },
 ];
 
 /** arXiv:2604.09616 BibTeX（DCGen 1.1, UChicago / Argonne） */
