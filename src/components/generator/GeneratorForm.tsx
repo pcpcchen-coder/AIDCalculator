@@ -13,6 +13,7 @@ import {
 import type { DatacenterType, HeatRejectionMode, OptimizationCriterion } from '@contracts/dcgen';
 import { DATACENTER_TYPES, GENERATION_YEARS } from '@contracts/dcgen';
 import { trpc } from '@/providers/trpc';
+import { tpl, useI18n } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Slider } from '@/components/ui/slider';
@@ -24,16 +25,16 @@ import RedundancyEditor from '@/components/generator/RedundancyEditor';
 import type { FormState } from '@/components/generator/generator-utils';
 import { fmt } from '@/components/generator/generator-utils';
 
-const DC_TYPE_SHORT: Record<DatacenterType, string> = {
-  'AI training': 'AI Training',
-  'AI inference': 'AI Inference',
-  'Mixed AI training and inference': 'Mixed AI',
-  Cloud: 'Cloud',
+const DC_TYPE_KEYS: Record<DatacenterType, string> = {
+  'AI training': 'generator.form.type.aiTraining',
+  'AI inference': 'generator.form.type.aiInference',
+  'Mixed AI training and inference': 'generator.form.type.mixedAi',
+  Cloud: 'generator.form.type.cloud',
 };
 
-const HEAT_DESC: Record<HeatRejectionMode, string> = {
-  'Dry cooling': '使用乾冷卻器排熱，不耗水',
-  'Evaporative cooling': '使用蒸發式冷卻水塔，需水但效率較高',
+const HEAT_DESC_KEYS: Record<HeatRejectionMode, string> = {
+  'Dry cooling': 'generator.form.heatDryDesc',
+  'Evaporative cooling': 'generator.form.heatEvapDesc',
 };
 
 interface GeneratorFormProps {
@@ -76,6 +77,7 @@ export default function GeneratorForm({
   isGenerating,
   paramDefaults,
 }: GeneratorFormProps) {
+  const { t } = useI18n();
   // Reference 模式的 IT 配置清單（依類型篩選）
   const itConfigsQuery = trpc.itConfig.list.useQuery(
     { datacenterType: form.datacenterUseCase, model: 'Reference' },
@@ -113,28 +115,28 @@ export default function GeneratorForm({
         {/* 群組 A · 基本需求 */}
         <AccordionItem value="a" className="border-line">
           <AccordionTrigger className="py-4 text-sm font-medium text-text-0 hover:no-underline">
-            <GroupLabel icon={Cpu}>基本需求</GroupLabel>
+            <GroupLabel icon={Cpu}>{t('generator.form.groupBasic')}</GroupLabel>
           </AccordionTrigger>
           <AccordionContent className="flex flex-col gap-4 pb-5">
             <div>
-              <FieldLabel>資料中心類型</FieldLabel>
+              <FieldLabel>{t('generator.form.dcType')}</FieldLabel>
               <SegmentedControl
                 id="dc-type"
                 value={form.datacenterUseCase}
                 onChange={(v) => onChange({ datacenterUseCase: v, specificDatacenters: [] })}
-                options={DATACENTER_TYPES.map((t) => ({ value: t, label: DC_TYPE_SHORT[t] }))}
+                options={DATACENTER_TYPES.map((ty) => ({ value: ty, label: t(DC_TYPE_KEYS[ty]) }))}
               />
             </div>
 
             <div>
-              <FieldLabel>目標模式</FieldLabel>
+              <FieldLabel>{t('generator.form.targetMode')}</FieldLabel>
               <SegmentedControl
                 id="target-mode"
                 value={form.targetMode}
                 onChange={(v) => onChange({ targetMode: v })}
                 options={[
-                  { value: 'racks', label: '機架數' },
-                  { value: 'power', label: '功率 (MW)' },
+                  { value: 'racks', label: t('generator.form.targetRacks') },
+                  { value: 'power', label: t('generator.form.targetPower') },
                 ]}
               />
               <div className="relative mt-2">
@@ -151,7 +153,7 @@ export default function GeneratorForm({
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          aria-label="減少 100 機架"
+                          aria-label={t('generator.form.racksDecrease')}
                           onClick={() => onChange({ rackCount: Math.max(100, form.rackCount - 100) })}
                           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line bg-bg-1 text-text-1 transition-colors hover:border-accent/50 hover:text-accent"
                         >
@@ -167,14 +169,14 @@ export default function GeneratorForm({
                         />
                         <button
                           type="button"
-                          aria-label="增加 100 機架"
+                          aria-label={t('generator.form.racksIncrease')}
                           onClick={() => onChange({ rackCount: form.rackCount + 100 })}
                           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line bg-bg-1 text-text-1 transition-colors hover:border-accent/50 hover:text-accent"
                         >
                           <Plus className="h-4 w-4" />
                         </button>
                       </div>
-                      <p className="mt-1 text-[11px] text-text-2">步進 ±100 機架</p>
+                      <p className="mt-1 text-[11px] text-text-2">{t('generator.form.racksStep')}</p>
                     </motion.div>
                   ) : (
                     <motion.div
@@ -199,7 +201,10 @@ export default function GeneratorForm({
                         </span>
                       </div>
                       <p className="mt-1 font-mono text-[11px] text-text-2">
-                        送出格式：{form.powerMw}MW{form.powerMw >= 1000 ? `（= ${fmt(form.powerMw / 1000, 1)} GW）` : ''}
+                        {tpl(t('generator.form.powerFormat'), { mw: form.powerMw })}
+                        {form.powerMw >= 1000
+                          ? tpl(t('generator.form.powerFormatGw'), { gw: fmt(form.powerMw / 1000, 1) })
+                          : ''}
                       </p>
                     </motion.div>
                   )}
@@ -208,14 +213,14 @@ export default function GeneratorForm({
             </div>
 
             <div>
-              <FieldLabel>模型別</FieldLabel>
+              <FieldLabel>{t('generator.form.model')}</FieldLabel>
               <SegmentedControl
                 id="model"
                 value={form.model}
                 onChange={(v) => onChange({ model: v })}
                 options={[
-                  { value: 'Canonical', label: 'Canonical', title: '標準世代模型（依年份）' },
-                  { value: 'Reference', label: 'Reference', title: '參考真實資料中心配置' },
+                  { value: 'Canonical', label: 'Canonical', title: t('generator.form.modelCanonicalHint') },
+                  { value: 'Reference', label: 'Reference', title: t('generator.form.modelReferenceHint') },
                 ]}
               />
             </div>
@@ -230,7 +235,7 @@ export default function GeneratorForm({
                   transition={{ duration: 0.2, ease: 'easeOut' }}
                   className="overflow-hidden"
                 >
-                  <FieldLabel>運轉年份</FieldLabel>
+                  <FieldLabel>{t('generator.form.generation')}</FieldLabel>
                   <SegmentedControl
                     id="generation"
                     value={form.generation}
@@ -247,8 +252,8 @@ export default function GeneratorForm({
                   transition={{ duration: 0.25, ease: 'easeOut' }}
                   className="overflow-hidden"
                 >
-                  <FieldLabel hint="不勾選任何項目 = 全部參考配置（All）">
-                    參考配置（可複選）
+                  <FieldLabel hint={t('generator.form.refConfigsHint')}>
+                    {t('generator.form.refConfigs')}
                   </FieldLabel>
                   <div className="max-h-44 overflow-y-auto rounded-lg border border-line bg-bg-1 p-2">
                     {itConfigsQuery.isLoading ? (
@@ -258,7 +263,7 @@ export default function GeneratorForm({
                         <Skeleton className="h-6 w-3/5" />
                       </div>
                     ) : refConfigs.length === 0 ? (
-                      <p className="p-2 text-xs text-text-2">此類型尚無 Reference 配置</p>
+                      <p className="p-2 text-xs text-text-2">{t('generator.form.refConfigsEmpty')}</p>
                     ) : (
                       <div className="flex flex-col gap-1">
                         {refConfigs.map((c) => {
@@ -291,20 +296,20 @@ export default function GeneratorForm({
                   </div>
                   <p className="mt-1 text-[11px] text-text-2">
                     {form.specificDatacenters.length === 0
-                      ? '目前：All（全部參考配置各產生一組結果）'
-                      : `已選 ${form.specificDatacenters.length} 項`}
+                      ? t('generator.form.refAll')
+                      : tpl(t('generator.form.refSelected'), { n: form.specificDatacenters.length })}
                   </p>
                 </motion.div>
               )}
             </AnimatePresence>
 
             <div>
-              <FieldLabel hint="設備選型的最佳化方向，至少選一個">優化目標（可複選）</FieldLabel>
+              <FieldLabel hint={t('generator.form.criteriaHint')}>{t('generator.form.criteria')}</FieldLabel>
               <div className="flex gap-2">
                 {(
                   [
-                    { value: 'Space', label: 'Space 空間效率' },
-                    { value: 'Power', label: 'Power 功率效率' },
+                    { value: 'Space', label: t('generator.form.criterionSpace') },
+                    { value: 'Power', label: t('generator.form.criterionPower') },
                   ] as const
                 ).map((opt) => {
                   const active = form.optimizationCriteria.includes(opt.value);
@@ -332,18 +337,18 @@ export default function GeneratorForm({
         {/* 群組 B · 冷卻 */}
         <AccordionItem value="b" className="border-line">
           <AccordionTrigger className="py-4 text-sm font-medium text-text-0 hover:no-underline">
-            <GroupLabel icon={Snowflake}>冷卻</GroupLabel>
+            <GroupLabel icon={Snowflake}>{t('generator.form.groupCooling')}</GroupLabel>
           </AccordionTrigger>
           <AccordionContent className="flex flex-col gap-4 pb-5">
             <div>
-              <FieldLabel>散熱模式</FieldLabel>
+              <FieldLabel>{t('generator.form.heatMode')}</FieldLabel>
               <SegmentedControl
                 id="heat"
                 value={form.heatRejectionMode}
                 onChange={(v) => onChange({ heatRejectionMode: v })}
                 options={[
-                  { value: 'Dry cooling', label: 'Dry cooling' },
-                  { value: 'Evaporative cooling', label: 'Evaporative' },
+                  { value: 'Dry cooling', label: t('generator.form.heatDry') },
+                  { value: 'Evaporative cooling', label: t('generator.form.heatEvap') },
                 ]}
               />
               <AnimatePresence mode="wait" initial={false}>
@@ -355,7 +360,7 @@ export default function GeneratorForm({
                   transition={{ duration: 0.15 }}
                   className="mt-1.5 text-[11px] text-text-2"
                 >
-                  {HEAT_DESC[form.heatRejectionMode]}
+                  {t(HEAT_DESC_KEYS[form.heatRejectionMode])}
                 </motion.p>
               </AnimatePresence>
             </div>
@@ -365,11 +370,11 @@ export default function GeneratorForm({
         {/* 群組 C · 配電與冗餘 */}
         <AccordionItem value="c" className="border-line">
           <AccordionTrigger className="py-4 text-sm font-medium text-text-0 hover:no-underline">
-            <GroupLabel icon={Zap}>配電與冗餘</GroupLabel>
+            <GroupLabel icon={Zap}>{t('generator.form.groupPower')}</GroupLabel>
           </AccordionTrigger>
           <AccordionContent className="pb-5">
-            <FieldLabel hint="各系統的冗餘架構；xN/y 表示 x 組機組共享 y 組備援容量">
-              冗餘架構（七個系統槽位）
+            <FieldLabel hint={t('generator.form.redundancyHint')}>
+              {t('generator.form.redundancy')}
             </FieldLabel>
             <RedundancyEditor
               value={form.redundancy}
@@ -381,17 +386,17 @@ export default function GeneratorForm({
         {/* 群組 D · 進階（預設收合） */}
         <AccordionItem value="d" className="border-b-0 border-line">
           <AccordionTrigger className="py-4 text-sm font-medium text-text-0 hover:no-underline">
-            <GroupLabel icon={Settings2}>進階</GroupLabel>
+            <GroupLabel icon={Settings2}>{t('generator.form.groupAdvanced')}</GroupLabel>
           </AccordionTrigger>
           <AccordionContent className="flex flex-col gap-4 pb-5">
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-xs font-medium text-text-1">安全餘裕</span>
+                <span className="text-xs font-medium text-text-1">{t('generator.form.safetyMargin')}</span>
                 <div className="flex items-center gap-1.5">
                   <span className="font-mono text-xs text-accent">{fmt(form.safetyMargin * 100, 0)}%</span>
                   <button
                     type="button"
-                    title={`還原全域參數值（${fmt(paramDefaults.safetyMargin * 100, 0)}%）`}
+                    title={tpl(t('generator.form.resetToGlobal'), { v: `${fmt(paramDefaults.safetyMargin * 100, 0)}%` })}
                     onClick={() => onChange({ safetyMargin: paramDefaults.safetyMargin })}
                     className="rounded p-0.5 text-text-2 transition-colors hover:text-accent"
                   >
@@ -414,8 +419,8 @@ export default function GeneratorForm({
 
             {(
               [
-                { key: 'rackPerRow' as const, label: 'rack_per_row（每列機架數）', def: paramDefaults.rackPerRow },
-                { key: 'rowsPerPod' as const, label: 'rows_per_pod（每 pod 列數）', def: paramDefaults.rowsPerPod },
+                { key: 'rackPerRow' as const, label: t('generator.form.rackPerRowLabel'), def: paramDefaults.rackPerRow },
+                { key: 'rowsPerPod' as const, label: t('generator.form.rowsPerPodLabel'), def: paramDefaults.rowsPerPod },
               ]
             ).map((f) => (
               <div key={f.key}>
@@ -423,7 +428,7 @@ export default function GeneratorForm({
                   <span className="font-mono text-xs font-medium text-text-1">{f.label}</span>
                   <button
                     type="button"
-                    title={`還原全域參數值（${f.def}）`}
+                    title={tpl(t('generator.form.resetToGlobal'), { v: f.def })}
                     onClick={() => onChange({ [f.key]: f.def })}
                     className="rounded p-0.5 text-text-2 transition-colors hover:text-accent"
                   >
@@ -468,17 +473,17 @@ export default function GeneratorForm({
           {isGenerating ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              演算中…
+              {t('generator.form.generating')}
             </>
           ) : (
             <>
               <Zap className="h-4 w-4" />
-              產生配置
+              {t('generator.form.generate')}
             </>
           )}
         </motion.button>
         {form.optimizationCriteria.length === 0 && (
-          <p className="mt-2 text-center text-[11px] text-red">請至少選擇一個優化目標</p>
+          <p className="mt-2 text-center text-[11px] text-red">{t('generator.form.criteriaRequired')}</p>
         )}
       </div>
     </motion.div>

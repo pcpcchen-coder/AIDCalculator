@@ -1,6 +1,7 @@
 import type {
   DatacenterResult,
   DatacenterType,
+  EquipmentCategory,
   EquipmentDesignEntry,
   GenerateInput,
   GenerateResult,
@@ -9,7 +10,8 @@ import type {
   OptimizationCriterion,
   RedundancyMap,
 } from '@contracts/dcgen';
-import { DATACENTER_TYPE_LABELS, DEFAULT_REDUNDANCY } from '@contracts/dcgen';
+import { DEFAULT_REDUNDANCY } from '@contracts/dcgen';
+import type { Lang } from '@/i18n';
 
 // ---------------- 表單狀態 ----------------
 export type TargetMode = 'racks' | 'power';
@@ -148,9 +150,9 @@ export function fmtMw(n: number): string {
   return n >= 100 ? fmt(n, 0) : n >= 10 ? fmt(n, 1) : fmt(n, 2);
 }
 
-export function fmtDateTime(iso: string | Date): string {
+export function fmtDateTime(iso: string | Date, lang: Lang = 'zh-TW'): string {
   const d = typeof iso === 'string' ? new Date(iso) : iso;
-  return d.toLocaleString('zh-TW', {
+  return d.toLocaleString(lang === 'en' ? 'en-US' : lang, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -168,9 +170,35 @@ export const TYPE_BADGE_CLASS: Record<DatacenterType, string> = {
   Cloud: 'border-text-2/50 bg-bg-3 text-text-1',
 };
 
-export function typeLabel(t: DatacenterType): string {
-  return DATACENTER_TYPE_LABELS[t];
+/** 資料中心類型 → i18n key（顯示文字在各語系 dict 的 generator.enum.*） */
+export const DC_TYPE_KEYS: Record<DatacenterType, string> = {
+  'AI training': 'generator.enum.aiTraining',
+  'AI inference': 'generator.enum.aiInference',
+  'Mixed AI training and inference': 'generator.enum.mixedAi',
+  Cloud: 'generator.enum.cloud',
+};
+
+export function typeLabelKey(type: DatacenterType): string {
+  return DC_TYPE_KEYS[type];
 }
+
+/** 散熱模式 → i18n key */
+export const HEAT_MODE_KEYS: Record<HeatRejectionMode, string> = {
+  'Dry cooling': 'generator.enum.dryCooling',
+  'Evaporative cooling': 'generator.enum.evaporativeCooling',
+};
+
+/** 設備類別 → i18n key */
+export const EQUIPMENT_CATEGORY_KEYS: Record<EquipmentCategory, string> = {
+  cdu: 'generator.category.cdu',
+  chiller: 'generator.category.chiller',
+  dry_cooler: 'generator.category.dry_cooler',
+  cooling_tower: 'generator.category.cooling_tower',
+  pdu: 'generator.category.pdu',
+  ups: 'generator.category.ups',
+  msb: 'generator.category.msb',
+  generator: 'generator.category.generator',
+};
 
 export function isDeltaVendor(vendor: string | null | undefined): boolean {
   if (!vendor) return false;
@@ -256,17 +284,35 @@ interface BomRow {
   entry: EquipmentDesignEntry;
 }
 
-export function collectBomRows(nonIt: NonItResult | undefined): BomRow[] {
+/** BOM 系統/階段顯示文字（匯出 CSV 用）；未提供時回退繁中原文 */
+export interface BomLabels {
+  cooling: string;
+  power: string;
+  itStage: string;
+  facilityStage: string;
+}
+
+const DEFAULT_BOM_LABELS: BomLabels = {
+  cooling: '冷卻',
+  power: '配電',
+  itStage: 'IT 階段',
+  facilityStage: '廠務階段',
+};
+
+export function collectBomRows(
+  nonIt: NonItResult | undefined,
+  labels: BomLabels = DEFAULT_BOM_LABELS,
+): BomRow[] {
   const rows: BomRow[] = [];
   if (!nonIt) return rows;
   for (const [cat, entry] of Object.entries(nonIt.cooling.designs)) {
-    if (entry) rows.push({ system: '冷卻', stage: 'IT', category: cat, entry });
+    if (entry) rows.push({ system: labels.cooling, stage: 'IT', category: cat, entry });
   }
   for (const [cat, entry] of Object.entries(nonIt.power.designsIt)) {
-    if (entry) rows.push({ system: '配電', stage: 'IT 階段', category: cat, entry });
+    if (entry) rows.push({ system: labels.power, stage: labels.itStage, category: cat, entry });
   }
   for (const [cat, entry] of Object.entries(nonIt.power.designsFacility)) {
-    if (entry) rows.push({ system: '配電', stage: '廠務階段', category: cat, entry });
+    if (entry) rows.push({ system: labels.power, stage: labels.facilityStage, category: cat, entry });
   }
   return rows;
 }
@@ -276,19 +322,40 @@ function csvEscape(v: string | number): string {
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
-export function exportResultCsv(result: GenerateResult) {
-  const header = ['配置', '優化目標', '系統', '階段', '設備類別', '型號', '廠商', '數量', '容量(MW)', '功耗/損耗(MW)', '空間(m2)'];
+/** CSV 匯出文案（表頭 + BOM 系統/階段 + 類別翻譯）；未提供時回退繁中原文 */
+export interface CsvLabels extends BomLabels {
+  header: string[];
+  categoryLabel: (cat: string) => string;
+}
+
+const DEFAULT_CSV_HEADER = [
+  '配置',
+  '優化目標',
+  '系統',
+  '階段',
+  '設備類別',
+  '型號',
+  '廠商',
+  '數量',
+  '容量(MW)',
+  '功耗/損耗(MW)',
+  '空間(m2)',
+];
+
+export function exportResultCsv(result: GenerateResult, labels?: CsvLabels) {
+  const header = labels?.header ?? DEFAULT_CSV_HEADER;
+  const bomLabels: BomLabels = labels ?? DEFAULT_BOM_LABELS;
   const lines = [header.join(',')];
   for (const dc of result.results) {
     for (const nonIt of dc.nonIt) {
-      for (const r of collectBomRows(nonIt)) {
+      for (const r of collectBomRows(nonIt, bomLabels)) {
         lines.push(
           [
             dc.configName,
             nonIt.criterion,
             r.system,
             r.stage,
-            r.category,
+            labels ? labels.categoryLabel(r.category) : r.category,
             r.entry.name,
             r.entry.vendor ?? '',
             r.entry.totalCount,
