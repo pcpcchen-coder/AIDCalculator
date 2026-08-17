@@ -32,7 +32,6 @@ import EquipmentDrawer from './EquipmentDrawer';
 import {
   CATEGORY_META,
   EQUIPMENT_CATEGORIES,
-  EQUIPMENT_CATEGORY_LABELS,
   isCoolingCategory,
   isDeltaVendor,
   fmtKw,
@@ -43,6 +42,7 @@ import {
   type EquipmentRow,
 } from './catalogMeta';
 import type { EquipmentCategory } from './catalogMeta';
+import { useI18n, tpl } from '@/i18n';
 
 export interface TabHandlers {
   add: () => void;
@@ -62,11 +62,11 @@ type ColKey = 'dims' | 'lambda' | 'generation' | 'source';
 
 const PAGE_SIZE = 15;
 
-const COL_OPTIONS: { key: ColKey; label: string }[] = [
-  { key: 'dims', label: '尺寸 H×W×D' },
-  { key: 'lambda', label: 'λ 維護通道占比' },
-  { key: 'generation', label: '年份' },
-  { key: 'source', label: '來源' },
+const COL_OPTIONS: { key: ColKey; labelKey: string }[] = [
+  { key: 'dims', labelKey: 'catalog.cols.dims' },
+  { key: 'lambda', labelKey: 'catalog.cols.lambda' },
+  { key: 'generation', labelKey: 'catalog.cols.generation' },
+  { key: 'source', labelKey: 'catalog.cols.source' },
 ];
 
 /** 依類別取得「功耗或效率」數值 */
@@ -78,6 +78,7 @@ export default function EquipmentTab({
   initialDeltaOnly,
   registerHandlers,
 }: EquipmentTabProps) {
+  const { t } = useI18n();
   const utils = trpc.useUtils();
 
   // ---------------- 篩選狀態 ----------------
@@ -101,8 +102,8 @@ export default function EquipmentTab({
 
   // 搜尋 debounce 300ms
   useEffect(() => {
-    const t = setTimeout(() => setSearch(searchInput.trim()), 300);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setSearch(searchInput.trim()), 300);
+    return () => clearTimeout(timer);
   }, [searchInput]);
 
   // 篩選變更回到第一頁
@@ -166,7 +167,6 @@ export default function EquipmentTab({
   // ---------------- 匯出 / 新增 handlers 註冊給頁首 ----------------
   const exportPayloadRef = useRef<EquipmentRow[]>([]);
   exportPayloadRef.current = filteredRows;
-
   useEffect(() => {
     registerHandlers({
       add: () => setDrawer({ open: true, row: null }),
@@ -177,7 +177,7 @@ export default function EquipmentTab({
           JSON.stringify(rows, null, 2),
           'application/json',
         );
-        toast.success(`已匯出 JSON（${rows.length} 筆設備）`);
+        toast.success(tpl(t('catalog.export.toastJson'), { count: rows.length }));
       },
       exportCsv: () => {
         const rows = exportPayloadRef.current;
@@ -190,29 +190,29 @@ export default function EquipmentTab({
           ]),
         );
         downloadFile('dcgen-equipment.csv', csv, 'text/csv');
-        toast.success(`已匯出 CSV（${rows.length} 筆設備）`);
+        toast.success(tpl(t('catalog.export.toastCsv'), { count: rows.length }));
       },
     });
     return () => registerHandlers(null);
-  }, [registerHandlers]);
+  }, [registerHandlers, t]);
 
   // ---------------- 刪除 ----------------
   const deleteMut = trpc.catalog.delete.useMutation({
     onSuccess: async () => {
-      toast.success('已刪除設備');
+      toast.success(t('catalog.toast.deleteEquipment'));
       setDeleteTarget(null);
       await Promise.all([utils.catalog.list.invalidate(), utils.stats.get.invalidate()]);
     },
-    onError: (e) => toast.error(`刪除失敗：${e.message}`),
+    onError: (e) => toast.error(tpl(t('catalog.toast.deleteFailed'), { msg: e.message })),
   });
 
   // ---------------- 欄標 ----------------
   const powerColLabel =
     category === 'all'
-      ? '功耗 kW / 效率 %'
+      ? t('catalog.table.powerAll')
       : isCoolingCategory(category)
-        ? '峰值功耗 kW'
-        : '效率 %';
+        ? t('catalog.table.powerPeak')
+        : t('catalog.table.efficiency');
 
   const toggleSort = (key: SortKey) => {
     setSort((prev) =>
@@ -234,7 +234,7 @@ export default function EquipmentTab({
         <div className="no-scrollbar -mb-1 flex gap-2 overflow-x-auto pb-1">
           <CategoryPill
             active={category === 'all'}
-            label="全部"
+            label={t('common.all')}
             count={allQuery.data?.length}
             onClick={() => setCategory('all')}
           />
@@ -242,10 +242,10 @@ export default function EquipmentTab({
             <CategoryPill
               key={c}
               active={category === c}
-              label={CATEGORY_META[c].short}
+              label={t(`catalog.categoryShort.${c}`)}
               count={categoryCounts.get(c) ?? 0}
               dot={CATEGORY_META[c].dot}
-              title={EQUIPMENT_CATEGORY_LABELS[c]}
+              title={`${CATEGORY_META[c].short} · ${t(`catalog.category.${c}`)}`}
               onClick={() => setCategory(c)}
             />
           ))}
@@ -257,7 +257,7 @@ export default function EquipmentTab({
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="border-line bg-bg-1 text-text-1 hover:text-text-0">
                 <Factory className="h-3.5 w-3.5" />
-                廠商
+                {t('catalog.filter.vendor')}
                 {vendorSet.size > 0 && (
                   <span className="rounded-full bg-accent/15 px-1.5 font-mono text-xs text-accent">
                     {vendorSet.size}
@@ -266,7 +266,7 @@ export default function EquipmentTab({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="max-h-80 overflow-y-auto">
-              <DropdownMenuLabel>篩選廠商（多選）</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('catalog.filter.vendorMulti')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {vendorNames.map((v) => (
                 <DropdownMenuCheckboxItem
@@ -285,13 +285,13 @@ export default function EquipmentTab({
                   <span className="flex items-center gap-1.5">
                     {v}
                     {isDeltaVendor(v) && (
-                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-green" title="台達電子" />
+                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-green" title={t('catalog.delta.name')} />
                     )}
                   </span>
                 </DropdownMenuCheckboxItem>
               ))}
               {vendorNames.length === 0 && (
-                <p className="px-2 py-3 text-xs text-text-2">尚無廠商資料</p>
+                <p className="px-2 py-3 text-xs text-text-2">{t('catalog.filter.noVendors')}</p>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -302,7 +302,7 @@ export default function EquipmentTab({
             <input
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="搜尋型號或廠商…"
+              placeholder={t('catalog.search.placeholder')}
               className="w-full rounded-lg border border-line bg-bg-1 py-2 pl-9 pr-3 text-sm text-text-0 placeholder:text-text-2 focus:border-accent focus:outline-none focus:shadow-[0_0_0_3px_rgba(34,211,238,.15)]"
             />
           </div>
@@ -313,22 +313,22 @@ export default function EquipmentTab({
               <Switch
                 checked={deltaOnly}
                 onCheckedChange={setDeltaOnly}
-                aria-label="僅看台達電子產品"
+                aria-label={t('catalog.filter.deltaOnlyAria')}
                 className="data-[state=checked]:bg-green"
               />
               <span className="inline-block h-1.5 w-1.5 animate-led-breathe rounded-full bg-green" />
-              僅看台達產品
+              {t('catalog.filter.deltaOnly')}
             </label>
 
             {/* 欄位顯示設定 */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-text-2 hover:text-text-0" aria-label="欄位顯示設定">
+                <Button variant="ghost" size="sm" className="text-text-2 hover:text-text-0" aria-label={t('catalog.columns.aria')}>
                   <Columns3 className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>欄位顯示</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('catalog.columns.title')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {COL_OPTIONS.map((c) => (
                   <DropdownMenuCheckboxItem
@@ -344,7 +344,7 @@ export default function EquipmentTab({
                     }}
                     onSelect={(e) => e.preventDefault()}
                   >
-                    {c.label}
+                    {t(c.labelKey)}
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
@@ -356,9 +356,9 @@ export default function EquipmentTab({
       {/* ---------------- 錯誤橫幅 ---------------- */}
       {listQuery.isError && (
         <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-power/40 bg-power/10 px-4 py-3 text-sm text-power">
-          <span>資料載入失敗：{listQuery.error.message}</span>
+          <span>{tpl(t('catalog.error.loadFailed'), { msg: listQuery.error.message })}</span>
           <Button size="sm" variant="outline" className="border-power/40 text-power" onClick={() => listQuery.refetch()}>
-            重試
+            {t('common.retry')}
           </Button>
         </div>
       )}
@@ -368,18 +368,18 @@ export default function EquipmentTab({
         <table className="w-full min-w-[880px] text-sm">
           <thead>
             <tr className="bg-bg-1 text-left text-xs uppercase tracking-wider text-text-1">
-              <th className="px-4 py-3 font-medium">分類</th>
-              <th className="px-4 py-3 font-medium">型號</th>
-              <th className="px-4 py-3 font-medium">廠商</th>
-              <SortableTh label="容量 kW" active={sort?.key === 'capacityKw'} dir={sort?.dir} onClick={() => toggleSort('capacityKw')} />
+              <th className="px-4 py-3 font-medium">{t('catalog.table.category')}</th>
+              <th className="px-4 py-3 font-medium">{t('catalog.table.model')}</th>
+              <th className="px-4 py-3 font-medium">{t('catalog.table.vendor')}</th>
+              <SortableTh label={t('catalog.table.capacity')} active={sort?.key === 'capacityKw'} dir={sort?.dir} onClick={() => toggleSort('capacityKw')} />
               <SortableTh label={powerColLabel} active={sort?.key === 'power'} dir={sort?.dir} onClick={() => toggleSort('power')} />
-              {visibleCols.has('dims') && <th className="px-4 py-3 font-medium">尺寸 H×W×D m</th>}
+              {visibleCols.has('dims') && <th className="px-4 py-3 font-medium">{t('catalog.table.dims')}</th>}
               {visibleCols.has('lambda') && <th className="px-4 py-3 font-medium">λ</th>}
               {visibleCols.has('generation') && (
-                <SortableTh label="年份" active={sort?.key === 'generation'} dir={sort?.dir} onClick={() => toggleSort('generation')} />
+                <SortableTh label={t('catalog.cols.generation')} active={sort?.key === 'generation'} dir={sort?.dir} onClick={() => toggleSort('generation')} />
               )}
-              {visibleCols.has('source') && <th className="px-4 py-3 font-medium">來源</th>}
-              <th className="px-4 py-3 text-right font-medium">操作</th>
+              {visibleCols.has('source') && <th className="px-4 py-3 font-medium">{t('catalog.cols.source')}</th>}
+              <th className="px-4 py-3 text-right font-medium">{t('catalog.table.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -396,10 +396,10 @@ export default function EquipmentTab({
               <tr className="border-t border-line">
                 <td colSpan={colSpan} className="px-4 py-14">
                   <div className="flex flex-col items-center gap-3 text-center">
-                    <img src="/empty-rack.svg" alt="尚無資料" className="h-28 w-auto opacity-80" />
-                    <p className="text-sm text-text-1">尚無符合篩選條件的設備</p>
+                    <img src="/empty-rack.svg" alt={t('catalog.empty.alt')} className="h-28 w-auto opacity-80" />
+                    <p className="text-sm text-text-1">{t('catalog.empty.equipment')}</p>
                     <Button size="sm" onClick={() => setDrawer({ open: true, row: null })}>
-                      ＋ 新增設備
+                      {t('catalog.empty.addEquipment')}
                     </Button>
                   </div>
                 </td>
@@ -427,8 +427,11 @@ export default function EquipmentTab({
                     {/* 分類徽章（台達列左緣 2px 綠標） */}
                     <td className={cn('px-4 py-3', delta && 'border-l-2 border-l-green')}>
                       {meta ? (
-                        <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-xs', meta.badge)}>
-                          {meta.short}
+                        <span
+                          title={meta.short}
+                          className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-xs', meta.badge)}
+                        >
+                          {t(`catalog.categoryShort.${r.category}`)}
                         </span>
                       ) : (
                         <span className="text-xs text-text-2">{r.category}</span>
@@ -440,7 +443,7 @@ export default function EquipmentTab({
                     <td className="px-4 py-3 text-text-1">
                       <span className="flex items-center gap-1.5">
                         {delta && (
-                          <span className="inline-block h-1.5 w-1.5 shrink-0 animate-led-breathe rounded-full bg-green" title="台達電子" />
+                          <span className="inline-block h-1.5 w-1.5 shrink-0 animate-led-breathe rounded-full bg-green" title={t('catalog.delta.name')} />
                         )}
                         {r.vendorName ?? '—'}
                       </span>
@@ -478,7 +481,7 @@ export default function EquipmentTab({
                                 target="_blank"
                                 rel="noreferrer"
                                 className="inline-flex rounded p-1 text-text-2 transition-colors hover:text-accent"
-                                aria-label={`來源：${urlDomain(r.sourceUrl) ?? r.sourceUrl}`}
+                                aria-label={tpl(t('catalog.source.aria'), { domain: urlDomain(r.sourceUrl) ?? r.sourceUrl })}
                               >
                                 <ExternalLink className="h-4 w-4" />
                               </a>
@@ -495,7 +498,7 @@ export default function EquipmentTab({
                       <div className="flex justify-end gap-1">
                         <button
                           type="button"
-                          aria-label={`編輯 ${r.name}`}
+                          aria-label={tpl(t('catalog.action.edit'), { name: r.name })}
                           className="rounded-lg p-1.5 text-text-2 transition-colors hover:bg-bg-1 hover:text-accent"
                           onClick={() => setDrawer({ open: true, row: r })}
                         >
@@ -503,7 +506,7 @@ export default function EquipmentTab({
                         </button>
                         <button
                           type="button"
-                          aria-label={`刪除 ${r.name}`}
+                          aria-label={tpl(t('catalog.action.delete'), { name: r.name })}
                           className="rounded-lg p-1.5 text-text-2 transition-colors hover:bg-bg-1 hover:text-red"
                           onClick={() => setDeleteTarget(r)}
                         >
@@ -536,7 +539,12 @@ export default function EquipmentTab({
       {filteredRows.length > 0 && (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-text-2">
           <span className="font-mono text-xs">
-            共 {filteredRows.length} 筆 · 第 {safePage}/{pageCount} 頁（每頁 {PAGE_SIZE} 筆）
+            {tpl(t('catalog.pagination.summary'), {
+              total: filteredRows.length,
+              page: safePage,
+              pages: pageCount,
+              size: PAGE_SIZE,
+            })}
           </span>
           <div className="flex items-center gap-1.5">
             <Button
@@ -545,7 +553,7 @@ export default function EquipmentTab({
               className="border-line bg-bg-1"
               disabled={safePage <= 1}
               onClick={() => setPage(safePage - 1)}
-              aria-label="上一頁"
+              aria-label={t('catalog.pagination.prev')}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -574,7 +582,7 @@ export default function EquipmentTab({
               className="border-line bg-bg-1"
               disabled={safePage >= pageCount}
               onClick={() => setPage(safePage + 1)}
-              aria-label="下一頁"
+              aria-label={t('catalog.pagination.next')}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -600,7 +608,7 @@ export default function EquipmentTab({
       <DeleteDialog
         open={deleteTarget !== null}
         name={deleteTarget?.name ?? ''}
-        entityLabel="設備"
+        entityLabel={t('catalog.entity.equipment')}
         pending={deleteMut.isPending}
         onCancel={() => setDeleteTarget(null)}
         onConfirm={() => deleteTarget && deleteMut.mutate({ id: deleteTarget.id })}
@@ -693,6 +701,7 @@ function SortableTh({
 
 /** 展開列詳情：三欄（完整規格／尺寸視覺條／來源＋產生配置） */
 function ExpandedDetail({ row }: { row: EquipmentRow }) {
+  const { t } = useI18n();
   const cooling = isCoolingCategory(row.category);
   const dims = [
     { label: 'H', value: row.heightM, color: 'bg-accent' },
@@ -701,20 +710,26 @@ function ExpandedDetail({ row }: { row: EquipmentRow }) {
   ];
   const maxDim = Math.max(...dims.map((d) => d.value ?? 0), 0.001);
   const specs: [string, string][] = [
-    ['容量', `${fmtKw(row.capacityKw)} kW`],
+    [t('catalog.detail.capacity'), `${fmtKw(row.capacityKw)} kW`],
     cooling
-      ? ['峰值功耗', `${fmtKw(row.peakPowerConsumptionKw)} kW`]
-      : ['效率', row.efficiency != null ? `${(row.efficiency * 100).toFixed(1)}%` : '—'],
-    ['λ 維護通道占比', String(row.accessAreaShare)],
-    ['年份', row.generation ?? '—'],
-    ['引擎選型', row.engineEligible ? '納入' : '排除'],
-    ['資料來源', row.isCustom ? '使用者新增' : '官方型錄'],
+      ? [t('catalog.detail.peakPower'), `${fmtKw(row.peakPowerConsumptionKw)} kW`]
+      : [t('catalog.detail.efficiency'), row.efficiency != null ? `${(row.efficiency * 100).toFixed(1)}%` : '—'],
+    [t('catalog.detail.lambda'), String(row.accessAreaShare)],
+    [t('catalog.detail.generation'), row.generation ?? '—'],
+    [
+      t('catalog.detail.engine'),
+      row.engineEligible ? t('catalog.detail.engineIncluded') : t('catalog.detail.engineExcluded'),
+    ],
+    [
+      t('catalog.detail.source'),
+      row.isCustom ? t('catalog.detail.custom') : t('catalog.detail.official'),
+    ],
   ];
   return (
     <div className="grid gap-6 py-5 md:grid-cols-3">
       {/* 完整規格 */}
       <div>
-        <h4 className="mb-2.5 text-xs font-medium uppercase tracking-wider text-text-2">完整規格</h4>
+        <h4 className="mb-2.5 text-xs font-medium uppercase tracking-wider text-text-2">{t('catalog.detail.fullSpecs')}</h4>
         <dl className="flex flex-col gap-1.5 text-sm">
           {specs.map(([k, v]) => (
             <div key={k} className="flex justify-between gap-3">
@@ -731,7 +746,7 @@ function ExpandedDetail({ row }: { row: EquipmentRow }) {
       </div>
       {/* 尺寸視覺條 */}
       <div>
-        <h4 className="mb-2.5 text-xs font-medium uppercase tracking-wider text-text-2">尺寸比例（m）</h4>
+        <h4 className="mb-2.5 text-xs font-medium uppercase tracking-wider text-text-2">{t('catalog.detail.dimRatio')}</h4>
         <div className="flex flex-col gap-2">
           {dims.map((d) => (
             <div key={d.label} className="flex items-center gap-2">
@@ -749,12 +764,12 @@ function ExpandedDetail({ row }: { row: EquipmentRow }) {
               <span className="w-16 text-right font-mono text-xs text-text-1">{fmtDim(d.value)}</span>
             </div>
           ))}
-          {dims.every((d) => d.value === null) && <p className="text-xs text-text-2">未提供尺寸資料</p>}
+          {dims.every((d) => d.value === null) && <p className="text-xs text-text-2">{t('catalog.detail.noDims')}</p>}
         </div>
       </div>
       {/* 來源 + CTA */}
       <div className="flex flex-col gap-3">
-        <h4 className="text-xs font-medium uppercase tracking-wider text-text-2">來源</h4>
+        <h4 className="text-xs font-medium uppercase tracking-wider text-text-2">{t('catalog.detail.sourceTitle')}</h4>
         {row.sourceUrl ? (
           <a
             href={row.sourceUrl}
@@ -765,13 +780,13 @@ function ExpandedDetail({ row }: { row: EquipmentRow }) {
             {row.sourceUrl}
           </a>
         ) : (
-          <p className="text-xs text-text-2">未提供來源連結</p>
+          <p className="text-xs text-text-2">{t('catalog.detail.noSource')}</p>
         )}
         <Link
           to={`/generator?equipmentId=${row.id}`}
           className="mt-auto inline-flex w-fit items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-medium text-accent transition-all hover:bg-accent/20 hover:shadow-glow"
         >
-          以此設備產生配置
+          {t('catalog.detail.generate')}
           <ArrowUpRight className="h-3.5 w-3.5" />
         </Link>
       </div>

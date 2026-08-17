@@ -1,12 +1,13 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useI18n, tpl } from '@/i18n';
 
 interface DeleteDialogProps {
   open: boolean;
   /** 實體顯示名稱（Mono 強調） */
   name: string;
-  /** 實體類型描述，如「設備」/「IT 配置」 */
+  /** 實體類型描述（已翻譯），如「設備」/「IT 配置」 */
   entityLabel: string;
   pending?: boolean;
   onCancel: () => void;
@@ -22,6 +23,7 @@ export default function DeleteDialog({
   onCancel,
   onConfirm,
 }: DeleteDialogProps) {
+  const { t } = useI18n();
   return (
     <AnimatePresence>
       {open && (
@@ -37,7 +39,7 @@ export default function DeleteDialog({
           <motion.div
             role="alertdialog"
             aria-modal="true"
-            aria-label={`確認刪除${entityLabel}`}
+            aria-label={tpl(t('catalog.delete.ariaLabel'), { entity: entityLabel })}
             className="w-full max-w-md rounded-xl border border-line bg-bg-2 p-6 shadow-glow"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -50,20 +52,20 @@ export default function DeleteDialog({
                 <TriangleAlert className="h-4 w-4 text-red" />
               </span>
               <div>
-                <h2 className="text-base font-medium text-text-0">確認刪除？</h2>
+                <h2 className="text-base font-medium text-text-0">{t('catalog.delete.title')}</h2>
                 <p className="mt-1.5 text-sm leading-relaxed text-text-1">
-                  即將刪除{entityLabel}
-                  <span className="mx-1 font-mono font-medium text-text-0">{name}</span>。
-                  此操作無法復原；已存情境不受影響（情境含快照）。
+                  {tpl(t('catalog.delete.bodyPrefix'), { entity: entityLabel })}
+                  <span className="mx-1 font-mono font-medium text-text-0">{name}</span>
+                  {t('catalog.delete.bodySuffix')}
                 </p>
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-2">
               <Button type="button" variant="ghost" onClick={onCancel} disabled={pending}>
-                取消
+                {t('common.cancel')}
               </Button>
               <Button type="button" variant="destructive" onClick={onConfirm} disabled={pending}>
-                {pending ? '刪除中…' : '確認刪除'}
+                {pending ? t('catalog.delete.pending') : t('catalog.delete.confirm')}
               </Button>
             </div>
           </motion.div>
