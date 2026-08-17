@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useI18n } from '@/i18n';
 
 interface FormDrawerProps {
   open: boolean;
@@ -15,6 +16,7 @@ interface FormDrawerProps {
 
 /** 右側 480px 抽屜：x 100%→0 300ms easeOut，遮罩 fade（catalog.md §3.3） */
 export default function FormDrawer({ open, title, subtitle, onClose, children, footer }: FormDrawerProps) {
+  const { t } = useI18n();
   // Esc 關閉
   useEffect(() => {
     if (!open) return;
@@ -64,7 +66,7 @@ export default function FormDrawer({ open, title, subtitle, onClose, children, f
               </div>
               <button
                 type="button"
-                aria-label="關閉"
+                aria-label={t('common.close')}
                 onClick={onClose}
                 className="rounded-lg border border-line bg-bg-2 p-1.5 text-text-1 transition-colors hover:border-accent/40 hover:text-accent"
               >

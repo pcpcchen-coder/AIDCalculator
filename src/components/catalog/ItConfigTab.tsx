@@ -11,16 +11,17 @@ import ItConfigDrawer from './ItConfigDrawer';
 import type { TabHandlers } from './EquipmentTab';
 import {
   DATACENTER_TYPES,
-  DATACENTER_TYPE_LABELS,
   DC_TYPE_BADGE,
-  RACK_TYPE_LABELS,
+  DC_TYPE_I18N_KEYS,
+  DC_TYPE_SHORT_I18N_KEYS,
   fmtNum,
   toCsv,
   downloadFile,
   type ItConfigRow,
 } from './catalogMeta';
 import type { DatacenterType } from './catalogMeta';
-import { NODE_TYPE_LABELS, GENERATION_YEARS } from '@contracts/dcgen';
+import { GENERATION_YEARS } from '@contracts/dcgen';
+import { useI18n, tpl } from '@/i18n';
 
 interface ItConfigTabProps {
   registerHandlers: (h: TabHandlers | null) => void;
@@ -29,6 +30,7 @@ interface ItConfigTabProps {
 const NODE_COLORS = ['#22D3EE', '#38BDF8', '#A78BFA', '#F59E0B', '#34D399', '#64748B'];
 
 export default function ItConfigTab({ registerHandlers }: ItConfigTabProps) {
+  const { t } = useI18n();
   const utils = trpc.useUtils();
 
   const [dcType, setDcType] = useState<DatacenterType | 'all'>('all');
@@ -43,8 +45,8 @@ export default function ItConfigTab({ registerHandlers }: ItConfigTabProps) {
   const [deleteTarget, setDeleteTarget] = useState<ItConfigRow | null>(null);
 
   useEffect(() => {
-    const t = setTimeout(() => setSearch(searchInput.trim()), 300);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setSearch(searchInput.trim()), 300);
+    return () => clearTimeout(timer);
   }, [searchInput]);
 
   const listQuery = trpc.itConfig.list.useQuery({
@@ -74,7 +76,7 @@ export default function ItConfigTab({ registerHandlers }: ItConfigTabProps) {
       exportJson: () => {
         const rows = exportPayloadRef.current;
         downloadFile('dcgen-it-configs.json', JSON.stringify(rows, null, 2), 'application/json');
-        toast.success(`已匯出 JSON（${rows.length} 筆 IT 配置）`);
+        toast.success(tpl(t('catalog.export.toastJsonIt'), { count: rows.length }));
       },
       exportCsv: () => {
         const rows = exportPayloadRef.current;
@@ -92,33 +94,33 @@ export default function ItConfigTab({ registerHandlers }: ItConfigTabProps) {
           }),
         );
         downloadFile('dcgen-it-configs.csv', csv, 'text/csv');
-        toast.success(`已匯出 CSV（${rows.length} 筆 IT 配置）`);
+        toast.success(tpl(t('catalog.export.toastCsvIt'), { count: rows.length }));
       },
     });
     return () => registerHandlers(null);
-  }, [registerHandlers]);
+  }, [registerHandlers, t]);
 
   // ---------------- 刪除 / 複製 ----------------
   const deleteMut = trpc.itConfig.delete.useMutation({
     onSuccess: async () => {
-      toast.success('已刪除 IT 配置');
+      toast.success(t('catalog.toast.deleteIt'));
       setDeleteTarget(null);
       await Promise.all([utils.itConfig.list.invalidate(), utils.stats.get.invalidate()]);
     },
-    onError: (e) => toast.error(`刪除失敗：${e.message}`),
+    onError: (e) => toast.error(tpl(t('catalog.toast.deleteFailed'), { msg: e.message })),
   });
 
   const duplicateMut = trpc.itConfig.create.useMutation({
     onSuccess: async () => {
-      toast.success('已複製 IT 配置');
+      toast.success(t('catalog.toast.duplicateIt'));
       await Promise.all([utils.itConfig.list.invalidate(), utils.stats.get.invalidate()]);
     },
-    onError: (e) => toast.error(`複製失敗：${e.message}`),
+    onError: (e) => toast.error(tpl(t('catalog.toast.duplicateFailed'), { msg: e.message })),
   });
 
   const duplicate = (r: ItConfigRow) => {
     duplicateMut.mutate({
-      name: `${r.name}（複製）`,
+      name: tpl(t('catalog.duplicate.name'), { name: r.name }),
       datacenterType: r.datacenterType as DatacenterType,
       model: r.model === 'Reference' ? 'Reference' : 'Canonical',
       generation: r.generation,
@@ -142,27 +144,27 @@ export default function ItConfigTab({ registerHandlers }: ItConfigTabProps) {
         <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
           {/* DC 類型膠囊 */}
           <div className="no-scrollbar flex gap-2 overflow-x-auto">
-            <FilterPill active={dcType === 'all'} label="全部" onClick={() => setDcType('all')} id="it-dctype" />
-            {DATACENTER_TYPES.map((t) => (
+            <FilterPill active={dcType === 'all'} label={t('common.all')} onClick={() => setDcType('all')} id="it-dctype" />
+            {DATACENTER_TYPES.map((dc) => (
               <FilterPill
-                key={t}
-                active={dcType === t}
-                label={shortDcLabel(t)}
-                title={DATACENTER_TYPE_LABELS[t]}
-                onClick={() => setDcType(t)}
+                key={dc}
+                active={dcType === dc}
+                label={t(DC_TYPE_SHORT_I18N_KEYS[dc])}
+                title={t(DC_TYPE_I18N_KEYS[dc])}
+                onClick={() => setDcType(dc)}
                 id="it-dctype"
               />
             ))}
           </div>
           {/* 來源膠囊 */}
           <div className="flex gap-2">
-            <FilterPill active={modelFilter === 'all'} label="全部來源" onClick={() => setModelFilter('all')} id="it-model" />
-            <FilterPill active={modelFilter === 'Canonical'} label="Canonical（論文基準）" onClick={() => setModelFilter('Canonical')} id="it-model" />
-            <FilterPill active={modelFilter === 'Reference'} label="Reference（真實系統）" onClick={() => setModelFilter('Reference')} id="it-model" />
+            <FilterPill active={modelFilter === 'all'} label={t('catalog.filter.allModels')} onClick={() => setModelFilter('all')} id="it-model" />
+            <FilterPill active={modelFilter === 'Canonical'} label={t('catalog.model.canonical')} onClick={() => setModelFilter('Canonical')} id="it-model" />
+            <FilterPill active={modelFilter === 'Reference'} label={t('catalog.model.reference')} onClick={() => setModelFilter('Reference')} id="it-model" />
           </div>
           {/* 年份膠囊 */}
           <div className="flex gap-2">
-            <FilterPill active={generation === 'all'} label="全部年份" onClick={() => setGeneration('all')} id="it-gen" />
+            <FilterPill active={generation === 'all'} label={t('catalog.filter.allYears')} onClick={() => setGeneration('all')} id="it-gen" />
             {GENERATION_YEARS.map((y) => (
               <FilterPill key={y} active={generation === y} label={y} onClick={() => setGeneration(y)} id="it-gen" />
             ))}
@@ -173,7 +175,7 @@ export default function ItConfigTab({ registerHandlers }: ItConfigTabProps) {
             <input
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="搜尋配置名稱…"
+              placeholder={t('catalog.search.configPlaceholder')}
               className="w-full rounded-lg border border-line bg-bg-1 py-2 pl-9 pr-3 text-sm text-text-0 placeholder:text-text-2 focus:border-accent focus:outline-none focus:shadow-[0_0_0_3px_rgba(34,211,238,.15)]"
             />
           </div>
@@ -183,9 +185,9 @@ export default function ItConfigTab({ registerHandlers }: ItConfigTabProps) {
       {/* ---------------- 錯誤橫幅 ---------------- */}
       {listQuery.isError && (
         <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-power/40 bg-power/10 px-4 py-3 text-sm text-power">
-          <span>資料載入失敗：{listQuery.error.message}</span>
+          <span>{tpl(t('catalog.error.loadFailed'), { msg: listQuery.error.message })}</span>
           <Button size="sm" variant="outline" className="border-power/40 text-power" onClick={() => listQuery.refetch()}>
-            重試
+            {t('common.retry')}
           </Button>
         </div>
       )}
@@ -199,10 +201,10 @@ export default function ItConfigTab({ registerHandlers }: ItConfigTabProps) {
         </div>
       ) : filteredRows.length === 0 ? (
         <div className="mt-5 flex flex-col items-center gap-3 rounded-xl border border-line bg-bg-2 px-4 py-16 text-center">
-          <img src="/empty-rack.svg" alt="尚無資料" className="h-28 w-auto opacity-80" />
-          <p className="text-sm text-text-1">尚無符合篩選條件的 IT 配置</p>
+          <img src="/empty-rack.svg" alt={t('catalog.empty.alt')} className="h-28 w-auto opacity-80" />
+          <p className="text-sm text-text-1">{t('catalog.empty.it')}</p>
           <Button size="sm" onClick={() => setDrawer({ open: true, row: null })}>
-            ＋ 新增 IT 配置
+            {t('catalog.empty.addIt')}
           </Button>
         </div>
       ) : (
@@ -230,7 +232,7 @@ export default function ItConfigTab({ registerHandlers }: ItConfigTabProps) {
       <DeleteDialog
         open={deleteTarget !== null}
         name={deleteTarget?.name ?? ''}
-        entityLabel="IT 配置"
+        entityLabel={t('catalog.entity.it')}
         pending={deleteMut.isPending}
         onCancel={() => setDeleteTarget(null)}
         onConfirm={() => deleteTarget && deleteMut.mutate({ id: deleteTarget.id })}
@@ -240,19 +242,6 @@ export default function ItConfigTab({ registerHandlers }: ItConfigTabProps) {
 }
 
 // ---------------- 子元件 ----------------
-
-function shortDcLabel(t: DatacenterType): string {
-  switch (t) {
-    case 'AI training':
-      return 'AI Training';
-    case 'AI inference':
-      return 'AI Inference';
-    case 'Mixed AI training and inference':
-      return 'Mixed AI';
-    case 'Cloud':
-      return 'Cloud';
-  }
-}
 
 function FilterPill({
   active,
@@ -304,7 +293,9 @@ function ItConfigCard({
   onDuplicate: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useI18n();
   const typeBadge = DC_TYPE_BADGE[row.datacenterType as DatacenterType];
+  const dcTypeKey = DC_TYPE_I18N_KEYS[row.datacenterType as DatacenterType];
   const totalRacks = row.nodeTypes.reduce((s, n) => s + n.rackCount, 0);
   const totalKw = row.nodeTypes.reduce((s, n) => s + n.rackCount * n.rackTdp, 0);
   const maxTotal = Math.max(totalKw, 0.001);
@@ -320,7 +311,7 @@ function ItConfigCard({
       {/* 徽章列 */}
       <div className="flex flex-wrap items-center gap-1.5">
         <span className={cn('inline-flex rounded-full border px-2 py-0.5 text-xs', typeBadge ?? 'border-line text-text-1')}>
-          {DATACENTER_TYPE_LABELS[row.datacenterType as DatacenterType] ?? row.datacenterType}
+          {dcTypeKey ? t(dcTypeKey) : row.datacenterType}
         </span>
         <span
           className={cn(
@@ -342,7 +333,12 @@ function ItConfigCard({
 
       {/* 規格小表 */}
       <p className="mt-1.5 font-mono text-xs text-text-2">
-        RackSize {row.rackSize}U · RackType {row.rackType}（{RACK_TYPE_LABELS[row.rackType] ?? row.rackType}）· floorSpace {row.floorSpace} m²/rack
+        {tpl(t('catalog.card.spec'), {
+          rackSize: row.rackSize,
+          rackType: row.rackType,
+          rackTypeLabel: t(`catalog.rackType.${row.rackType}`),
+          floorSpace: row.floorSpace,
+        })}
       </p>
 
       {/* Node 明細 + 堆疊功率條 */}
@@ -352,9 +348,9 @@ function ItConfigCard({
           return (
             <div key={`${n.nodeType}-${i}`}>
               <div className="flex items-baseline justify-between gap-2 font-mono text-xs">
-                <span className="text-text-1">{NODE_TYPE_LABELS[n.nodeType] ?? n.nodeType}</span>
+                <span className="text-text-1">{t(`catalog.nodeType.${n.nodeType}`)}</span>
                 <span className="text-text-2">
-                  {fmtNum(n.rackCount)} 架 × {fmtNum(n.rackTdp, 1)} kW
+                  {tpl(t('catalog.card.nodeLine'), { count: fmtNum(n.rackCount), tdp: fmtNum(n.rackTdp, 1) })}
                 </span>
                 <span className="text-text-0">{fmtNum(kw, 1)} kW</span>
               </div>
@@ -371,8 +367,8 @@ function ItConfigCard({
           );
         })}
         <div className="mt-1 flex justify-between border-t border-line pt-2 font-mono text-xs">
-          <span className="text-text-2">合計</span>
-          <span className="text-text-1">{fmtNum(totalRacks)} 架</span>
+          <span className="text-text-2">{t('catalog.card.total')}</span>
+          <span className="text-text-1">{tpl(t('catalog.card.totalRacks'), { count: fmtNum(totalRacks) })}</span>
           <span className="font-bold text-accent">{fmtNum(totalKw, 1)} kW</span>
         </div>
       </div>
@@ -385,7 +381,7 @@ function ItConfigCard({
           className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-text-1 transition-colors hover:bg-bg-3 hover:text-accent"
         >
           <Pencil className="h-3.5 w-3.5" />
-          編輯
+          {t('common.edit')}
         </button>
         <button
           type="button"
@@ -393,7 +389,7 @@ function ItConfigCard({
           className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-text-1 transition-colors hover:bg-bg-3 hover:text-accent"
         >
           <Copy className="h-3.5 w-3.5" />
-          複製
+          {t('catalog.card.duplicate')}
         </button>
         <button
           type="button"
@@ -401,13 +397,13 @@ function ItConfigCard({
           className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-text-1 transition-colors hover:bg-bg-3 hover:text-red"
         >
           <Trash2 className="h-3.5 w-3.5" />
-          刪除
+          {t('common.delete')}
         </button>
         <Link
           to={`/generator?config=${encodeURIComponent(row.name)}`}
           className="ml-auto flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/10"
         >
-          用此配置產生
+          {t('catalog.card.generate')}
           <ArrowUpRight className="h-3.5 w-3.5" />
         </Link>
       </div>

@@ -108,6 +108,21 @@ export const RACK_TYPE_LABELS: Record<string, string> = {
   HPC: '液冷機架',
 };
 
+// ---------------- i18n key 映射（列舉值 → dict key；顯示文字由各語言字典提供） ----------------
+export const DC_TYPE_I18N_KEYS: Record<DatacenterType, string> = {
+  'AI training': 'catalog.dcType.aiTraining',
+  'AI inference': 'catalog.dcType.aiInference',
+  'Mixed AI training and inference': 'catalog.dcType.mixed',
+  Cloud: 'catalog.dcType.cloud',
+};
+
+export const DC_TYPE_SHORT_I18N_KEYS: Record<DatacenterType, string> = {
+  'AI training': 'catalog.dcTypeShort.aiTraining',
+  'AI inference': 'catalog.dcTypeShort.aiInference',
+  'Mixed AI training and inference': 'catalog.dcTypeShort.mixed',
+  Cloud: 'catalog.dcTypeShort.cloud',
+};
+
 // ---------------- 格式化 ----------------
 export const fmtNum = (n: number | null | undefined, digits = 0): string => {
   if (n === null || n === undefined || Number.isNaN(n)) return '—';

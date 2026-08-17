@@ -18,15 +18,15 @@ import FormDrawer from './FormDrawer';
 import { Field, inputClass } from './fields';
 import {
   EQUIPMENT_CATEGORIES,
-  EQUIPMENT_CATEGORY_LABELS,
   CATEGORY_META,
   isCoolingCategory,
   urlDomain,
   type EquipmentRow,
 } from './catalogMeta';
 import type { EquipmentCategory } from './catalogMeta';
+import { useI18n, tpl } from '@/i18n';
 
-// ---------------- zod schema（對齊後端 equipmentInput） ----------------
+// ---------------- zod schema（對齊後端 equipmentInput；訊息為 i18n key，顯示時經 t() 查表） ----------------
 const emptyToUndef = (v: unknown) =>
   v === '' || v === null || v === undefined || (typeof v === 'number' && Number.isNaN(v))
     ? undefined
@@ -34,35 +34,35 @@ const emptyToUndef = (v: unknown) =>
 
 const equipmentSchema = z.object({
   category: z.enum(EQUIPMENT_CATEGORIES),
-  name: z.string().min(1, '請輸入型號名稱').max(191, '型號名稱過長'),
-  vendorName: z.string().max(191, '廠商名稱過長').optional(),
-  capacityKw: z.coerce.number({ error: '請輸入容量' }).positive('容量需大於 0'),
+  name: z.string().min(1, 'catalog.err.nameRequired').max(191, 'catalog.err.nameTooLong'),
+  vendorName: z.string().max(191, 'catalog.err.vendorTooLong').optional(),
+  capacityKw: z.coerce.number({ error: 'catalog.err.capacityRequired' }).positive('catalog.err.capacityPositive'),
   peakPowerConsumptionKw: z.preprocess(
     emptyToUndef,
-    z.coerce.number().nonnegative('峰值功耗不可為負').optional(),
+    z.coerce.number().nonnegative('catalog.err.peakNonneg').optional(),
   ),
   efficiency: z.preprocess(
     emptyToUndef,
-    z.coerce.number().min(0, '效率不可小於 0').max(1, '效率需介於 0–1').optional(),
+    z.coerce.number().min(0, 'catalog.err.effMin').max(1, 'catalog.err.effMax').optional(),
   ),
-  heightM: z.preprocess(emptyToUndef, z.coerce.number().nonnegative('尺寸不可為負').optional()),
-  widthM: z.preprocess(emptyToUndef, z.coerce.number().nonnegative('尺寸不可為負').optional()),
-  depthM: z.preprocess(emptyToUndef, z.coerce.number().nonnegative('尺寸不可為負').optional()),
-  accessAreaShare: z.coerce.number().min(0, 'λ 不可小於 0').max(1, 'λ 需介於 0–1'),
+  heightM: z.preprocess(emptyToUndef, z.coerce.number().nonnegative('catalog.err.dimNonneg').optional()),
+  widthM: z.preprocess(emptyToUndef, z.coerce.number().nonnegative('catalog.err.dimNonneg').optional()),
+  depthM: z.preprocess(emptyToUndef, z.coerce.number().nonnegative('catalog.err.dimNonneg').optional()),
+  accessAreaShare: z.coerce.number().min(0, 'catalog.err.lambdaMin').max(1, 'catalog.err.lambdaMax'),
   generation: z.preprocess(
     emptyToUndef,
     z.coerce
       .number()
-      .int('年份需為整數')
-      .min(1950, '年份需介於 1950–2035')
-      .max(2035, '年份需介於 1950–2035')
+      .int('catalog.err.yearInt')
+      .min(1950, 'catalog.err.yearRange')
+      .max(2035, 'catalog.err.yearRange')
       .optional(),
   ),
   sourceUrl: z
     .string()
-    .max(512, 'URL 過長')
+    .max(512, 'catalog.err.urlTooLong')
     .optional()
-    .refine((v) => !v || /^https?:\/\/.+\..+/.test(v), '請輸入有效的 http(s) URL'),
+    .refine((v) => !v || /^https?:\/\/.+\..+/.test(v), 'catalog.err.urlInvalid'),
   notes: z.string().optional(),
   engineEligible: z.boolean(),
 });
@@ -89,7 +89,11 @@ export default function EquipmentDrawer({
   onClose,
   onSaved,
 }: EquipmentDrawerProps) {
+  const { t } = useI18n();
   const utils = trpc.useUtils();
+
+  /** zod 訊息（i18n key）→ 譯文 */
+  const errMsg = (m?: string): string | undefined => (m ? t(m) : undefined);
 
   const defaults = useMemo<EquipmentFormValues>(
     () => ({
@@ -145,19 +149,19 @@ export default function EquipmentDrawer({
 
   const createMut = trpc.catalog.create.useMutation({
     onSuccess: async (res) => {
-      toast.success('已新增設備');
+      toast.success(t('catalog.toast.createEquipment'));
       await Promise.all([utils.catalog.list.invalidate(), utils.catalog.vendors.invalidate(), utils.stats.get.invalidate()]);
       onSaved(res.id, 'create');
     },
-    onError: (e) => toast.error(`新增失敗：${e.message}`),
+    onError: (e) => toast.error(tpl(t('catalog.toast.createFailed'), { msg: e.message })),
   });
   const updateMut = trpc.catalog.update.useMutation({
     onSuccess: async () => {
-      toast.success('已更新設備');
+      toast.success(t('catalog.toast.updateEquipment'));
       await Promise.all([utils.catalog.list.invalidate(), utils.catalog.vendors.invalidate(), utils.stats.get.invalidate()]);
       onSaved(row?.id ?? null, 'update');
     },
-    onError: (e) => toast.error(`更新失敗：${e.message}`),
+    onError: (e) => toast.error(tpl(t('catalog.toast.updateFailed'), { msg: e.message })),
   });
 
   const onSubmit = handleSubmit(async (parsed) => {
@@ -200,35 +204,35 @@ export default function EquipmentDrawer({
     <FormDrawer
       open={open}
       onClose={onClose}
-      title={row ? `編輯設備：${row.name}` : '新增設備'}
-      subtitle="規格請依各廠商官方型錄填寫；標 * 為必填。"
+      title={row ? tpl(t('catalog.drawer.editTitle'), { name: row.name }) : t('catalog.drawer.addTitle')}
+      subtitle={t('catalog.drawer.subtitle')}
       footer={
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={onClose} disabled={pending}>
-            取消
+            {t('common.cancel')}
           </Button>
           <Button type="submit" form="equipment-form" disabled={pending}>
-            {pending ? '儲存中…' : '儲存'}
+            {pending ? t('catalog.drawer.saving') : t('common.save')}
           </Button>
         </div>
       }
     >
       <form id="equipment-form" onSubmit={onSubmit} className="flex flex-col gap-5" noValidate>
         {/* 分類 */}
-        <Field label="分類 *" error={errors.category?.message}>
+        <Field label={t('catalog.form.category')} error={errMsg(errors.category?.message)}>
           <Select
             value={category}
             onValueChange={(v) => setValue('category', v as EquipmentCategory, { shouldValidate: true })}
           >
             <SelectTrigger className={inputClass(!!errors.category)}>
-              <SelectValue placeholder="選擇分類" />
+              <SelectValue placeholder={t('catalog.form.categoryPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
               {EQUIPMENT_CATEGORIES.map((c) => (
                 <SelectItem key={c} value={c}>
                   <span className="flex items-center gap-2">
                     <span className={`inline-block h-2 w-2 rounded-full ${CATEGORY_META[c].dot}`} />
-                    {EQUIPMENT_CATEGORY_LABELS[c]}
+                    {t(`catalog.category.${c}`)}
                   </span>
                 </SelectItem>
               ))}
@@ -237,18 +241,18 @@ export default function EquipmentDrawer({
         </Field>
 
         {/* 型號 / 廠商 */}
-        <Field label="型號名稱 *" error={errors.name?.message}>
+        <Field label={t('catalog.form.name')} error={errMsg(errors.name?.message)}>
           <input
             className={inputClass(!!errors.name)}
-            placeholder="例如：Delta L2L CDU 1200kW"
+            placeholder={t('catalog.form.namePlaceholder')}
             {...register('name')}
           />
         </Field>
 
-        <Field label="廠商" error={errors.vendorName?.message} hint="可從清單選擇或直接輸入新廠商">
+        <Field label={t('catalog.form.vendor')} error={errMsg(errors.vendorName?.message)} hint={t('catalog.form.vendorHint')}>
           <input
             className={inputClass(!!errors.vendorName)}
-            placeholder="例如：台達電子 Delta"
+            placeholder={t('catalog.form.vendorPlaceholder')}
             list="catalog-vendor-list"
             {...register('vendorName')}
           />
@@ -260,34 +264,34 @@ export default function EquipmentDrawer({
         </Field>
 
         {/* 容量 */}
-        <Field label="容量（kW）*" error={errors.capacityKw?.message}>
+        <Field label={t('catalog.form.capacity')} error={errMsg(errors.capacityKw?.message)}>
           <input
             type="number"
             step="any"
             min={0}
             className={`${inputClass(!!errors.capacityKw)} font-mono`}
-            placeholder="例如：1200"
+            placeholder={t('catalog.form.capacityPlaceholder')}
             {...register('capacityKw', { valueAsNumber: true })}
           />
         </Field>
 
         {/* 依分類動態切換：冷卻類 → 峰值功耗；配電類 → 效率 */}
         {cooling ? (
-          <Field label="峰值功耗 Peak Power Consumption（kW）" error={errors.peakPowerConsumptionKw?.message}>
+          <Field label={t('catalog.form.peakPower')} error={errMsg(errors.peakPowerConsumptionKw?.message)}>
             <input
               type="number"
               step="any"
               min={0}
               className={`${inputClass(!!errors.peakPowerConsumptionKw)} font-mono`}
-              placeholder="例如：45"
+              placeholder={t('catalog.form.peakPlaceholder')}
               {...register('peakPowerConsumptionKw', { valueAsNumber: true })}
             />
           </Field>
         ) : (
           <Field
-            label="效率 Efficiency（0–1）"
-            error={errors.efficiency?.message}
-            hint="例如 0.97 代表 97%"
+            label={t('catalog.form.efficiency')}
+            error={errMsg(errors.efficiency?.message)}
+            hint={t('catalog.form.effHint')}
           >
             <input
               type="number"
@@ -295,14 +299,14 @@ export default function EquipmentDrawer({
               min={0}
               max={1}
               className={`${inputClass(!!errors.efficiency)} font-mono`}
-              placeholder="例如：0.97"
+              placeholder={t('catalog.form.effPlaceholder')}
               {...register('efficiency', { valueAsNumber: true })}
             />
           </Field>
         )}
 
         {/* 尺寸 H/W/D + 預覽比例條 */}
-        <Field label="尺寸（m）H / W / D">
+        <Field label={t('catalog.form.dims')}>
           <div className="grid grid-cols-3 gap-2">
             {(
               [
@@ -346,8 +350,8 @@ export default function EquipmentDrawer({
 
         {/* λ */}
         <Field
-          label="λ Access Area Share（維護通道占比，0–1）"
-          error={errors.accessAreaShare?.message}
+          label={t('catalog.form.lambda')}
+          error={errMsg(errors.accessAreaShare?.message)}
         >
           <div className="flex items-center gap-3">
             <Slider
@@ -370,20 +374,20 @@ export default function EquipmentDrawer({
         </Field>
 
         {/* 年份 */}
-        <Field label="年份（1950–2035）" error={errors.generation?.message}>
+        <Field label={t('catalog.form.generation')} error={errMsg(errors.generation?.message)}>
           <input
             type="number"
             step={1}
             min={1950}
             max={2035}
             className={`${inputClass(!!errors.generation?.message)} font-mono`}
-            placeholder="例如：2024"
+            placeholder={t('catalog.form.generationPlaceholder')}
             {...register('generation', { valueAsNumber: true })}
           />
         </Field>
 
         {/* 來源 URL */}
-        <Field label="來源 URL" error={errors.sourceUrl?.message}>
+        <Field label={t('catalog.form.sourceUrl')} error={errMsg(errors.sourceUrl?.message)}>
           <input
             className={inputClass(!!errors.sourceUrl?.message)}
             placeholder="https://..."
@@ -397,11 +401,11 @@ export default function EquipmentDrawer({
         </Field>
 
         {/* 備註 */}
-        <Field label="備註" error={errors.notes?.message}>
+        <Field label={t('catalog.form.notes')} error={errMsg(errors.notes?.message)}>
           <textarea
             rows={3}
             className={`${inputClass(!!errors.notes?.message)} resize-y`}
-            placeholder="並聯上限、重量、認證等補充資訊"
+            placeholder={t('catalog.form.notesPlaceholder')}
             {...register('notes')}
           />
         </Field>
@@ -409,13 +413,13 @@ export default function EquipmentDrawer({
         {/* engineEligible */}
         <div className="flex items-center justify-between rounded-lg border border-line bg-bg-2 px-4 py-3">
           <div>
-            <p className="text-sm text-text-0">納入引擎選型（engineEligible）</p>
-            <p className="text-xs text-text-2">關閉後產生器不會選用此設備</p>
+            <p className="text-sm text-text-0">{t('catalog.form.engineEligible')}</p>
+            <p className="text-xs text-text-2">{t('catalog.form.engineEligibleHint')}</p>
           </div>
           <Switch
             checked={watch('engineEligible')}
             onCheckedChange={(v) => setValue('engineEligible', v)}
-            aria-label="納入引擎選型"
+            aria-label={t('catalog.form.engineEligible')}
           />
         </div>
       </form>
