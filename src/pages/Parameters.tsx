@@ -16,15 +16,17 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
+import { tpl, useI18n } from '@/i18n';
 import ParameterGroup from '@/components/parameters/ParameterGroup';
 import AuditPanel from '@/components/parameters/AuditPanel';
 import CreateParameterDrawer from '@/components/parameters/CreateParameterDrawer';
 import type { CreateParameterInput } from '@/components/parameters/CreateParameterDrawer';
 import ParamFlowCard from '@/components/parameters/ParamFlowCard';
 import type { ParamItem } from '@/components/parameters/types';
-import { categoryMeta, isModified, sortCategories } from '@/components/parameters/types';
+import { categoryLabel, categoryMeta, isModified, sortCategories } from '@/components/parameters/types';
 
 export default function Parameters() {
+  const { t } = useI18n();
   const utils = trpc.useUtils();
   const listQuery = trpc.parameters.list.useQuery();
   const auditsQuery = trpc.parameters.audits.useQuery({ limit: 50 });
@@ -91,17 +93,17 @@ export default function Parameters() {
 
   const handleUpdate = async (key: string, value: number) => {
     await updateMut.mutateAsync({ key, value });
-    toast.success('參數已更新，下次產生配置即採用');
+    toast.success(t('params.toast.updated'));
   };
 
   const handleReset = async (key: string) => {
     await resetMut.mutateAsync({ key });
-    toast.success('已還原為預設值');
+    toast.success(t('params.toast.reset'));
   };
 
   const handleCreate = async (input: CreateParameterInput) => {
     await createMut.mutateAsync(input);
-    toast.success('自訂參數已新增');
+    toast.success(t('params.toast.created'));
     setFlashKey(input.key);
     window.setTimeout(() => setFlashKey(null), 1600);
   };
@@ -110,10 +112,10 @@ export default function Parameters() {
     if (!deleteTarget) return;
     try {
       await deleteMut.mutateAsync({ key: deleteTarget.key });
-      toast.success(`參數 ${deleteTarget.key} 已刪除`);
+      toast.success(tpl(t('params.toast.deleted'), { key: deleteTarget.key }));
       setDeleteTarget(null);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '刪除失敗');
+      toast.error(e instanceof Error ? e.message : t('params.toast.deleteFailed'));
     }
   };
 
@@ -123,10 +125,10 @@ export default function Parameters() {
       for (const p of modifiedParams) {
         await resetMut.mutateAsync({ key: p.key });
       }
-      toast.success(`已還原 ${modifiedParams.length} 筆參數為預設值`);
+      toast.success(tpl(t('params.toast.resetAll'), { n: modifiedParams.length }));
       setResetAllOpen(false);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '還原失敗');
+      toast.error(e instanceof Error ? e.message : t('params.toast.resetFailed'));
     } finally {
       setResettingAll(false);
     }
@@ -136,9 +138,9 @@ export default function Parameters() {
     <TooltipProvider>
       <div className="mx-auto max-w-[1400px] px-4 py-10 md:px-8 md:py-12">
         <PageHeader
-          breadcrumb={['首頁', '參數管理']}
-          title="參數管理"
-          description="DCGen 模型的全域參數。調整後立即生效於配置產生器；自訂參數可被自訂算法引用。"
+          breadcrumb={[t('params.crumb.home'), t('params.page.title')]}
+          title={t('params.page.title')}
+          description={t('params.page.desc')}
           action={
             <div className="flex items-center gap-2">
               <Button
@@ -148,14 +150,14 @@ export default function Parameters() {
                 className="border-red/40 bg-transparent text-red hover:bg-red/10 hover:text-red disabled:opacity-40"
               >
                 <RotateCcw className="h-4 w-4" />
-                還原全部預設
+                {t('params.resetAll.button')}
               </Button>
               <Button
                 onClick={() => setDrawerOpen(true)}
                 className="bg-accent text-bg-0 shadow-glow transition-all hover:scale-[1.02] hover:shadow-glow-strong active:scale-[0.97]"
               >
                 <Plus className="h-4 w-4" />
-                新增參數
+                {t('params.create.button')}
               </Button>
             </div>
           }
@@ -175,7 +177,7 @@ export default function Parameters() {
                   : 'border-line bg-bg-2 text-text-1',
               )}
             >
-              {g.category}
+              {categoryLabel(t, g.category)}
               <span className="font-mono text-[10px] text-text-2">{g.items.length}</span>
             </button>
           ))}
@@ -205,7 +207,7 @@ export default function Parameters() {
                       )}
                     />
                     <Icon className={cn('h-4 w-4', active ? 'text-accent' : 'text-text-2')} />
-                    <span className="flex-1 truncate text-left">{g.category}</span>
+                    <span className="flex-1 truncate text-left">{categoryLabel(t, g.category)}</span>
                     <span className="rounded-full border border-line bg-bg-1 px-1.5 py-0.5 font-mono text-[10px] text-text-2">
                       {g.items.length}
                     </span>
@@ -226,7 +228,7 @@ export default function Parameters() {
             ) : listQuery.isError ? (
               <div className="flex items-center gap-3 rounded-xl border border-red/40 bg-red/5 px-5 py-6 text-sm text-red">
                 <TriangleAlert className="h-5 w-5 shrink-0" />
-                參數載入失敗：{listQuery.error.message}
+                {tpl(t('params.loadFailed'), { msg: listQuery.error.message })}
               </div>
             ) : (
               groups.map((g, i) => (
@@ -277,22 +279,22 @@ export default function Parameters() {
       <AlertDialog open={deleteTarget !== null} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent className="border-line bg-bg-1">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-text-0">確認刪除？</AlertDialogTitle>
+            <AlertDialogTitle className="text-text-0">{t('common.deleteConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription className="text-text-1">
-              即將刪除自訂參數{' '}
+              {t('params.delete.descA')}
               <span className="font-mono text-accent">{deleteTarget?.key}</span>
-              ，引用此參數的自訂算法將無法取值。此操作無法復原。
+              {t('params.delete.descB')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="border-line bg-transparent text-text-1 hover:bg-bg-2 hover:text-text-0">
-              取消
+              {t('common.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => void handleDelete()}
               className="bg-red text-bg-0 hover:bg-red/90"
             >
-              確認刪除
+              {t('params.delete.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -302,15 +304,16 @@ export default function Parameters() {
       <AlertDialog open={resetAllOpen} onOpenChange={setResetAllOpen}>
         <AlertDialogContent className="border-line bg-bg-1">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-text-0">還原全部預設值？</AlertDialogTitle>
+            <AlertDialogTitle className="text-text-0">{t('params.resetAll.title')}</AlertDialogTitle>
             <AlertDialogDescription className="text-text-1">
-              共 <span className="font-mono text-power">{modifiedParams.length}</span>{' '}
-              筆已修改參數將還原為預設值，並立即生效於配置產生器。
+              {t('params.resetAll.descA')}
+              <span className="font-mono text-power">{modifiedParams.length}</span>
+              {t('params.resetAll.descB')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="border-line bg-transparent text-text-1 hover:bg-bg-2 hover:text-text-0">
-              取消
+              {t('common.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={resettingAll}
@@ -320,7 +323,7 @@ export default function Parameters() {
               }}
               className="bg-red text-bg-0 hover:bg-red/90"
             >
-              {resettingAll ? '還原中…' : '全部還原'}
+              {resettingAll ? t('params.resetAll.confirming') : t('params.resetAll.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

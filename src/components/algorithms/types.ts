@@ -84,6 +84,29 @@ export function algoCategoryMeta(category: string): AlgoCategoryMeta {
   return ALGO_CATEGORY_META[category] ?? { icon: FunctionSquare, color: 'text-text-1' };
 }
 
+/** DB 分類中文值 → i18n key slug */
+const ALGO_CATEGORY_SLUGS: Record<string, string> = {
+  儲存估算: 'storageEst',
+  儲存: 'storage',
+  'IT 模型': 'itModel',
+  'IT 功率': 'itPower',
+  'IT 空間': 'itSpace',
+  冷卻: 'cooling',
+  配電: 'powerDist',
+  冷卻與配電設備: 'coolingPower',
+  冗餘: 'redundancy',
+  冗餘計數: 'redundancyCount',
+  架構與設計: 'architecture',
+  自訂: 'custom',
+  自訂算法: 'customAlgo',
+};
+
+/** 分類顯示名（未知分類回退 DB 原文） */
+export function algoCategoryLabel(t: (key: string) => string, category: string): string {
+  const slug = ALGO_CATEGORY_SLUGS[category];
+  return slug ? t(`params.cat.${slug}`) : category;
+}
+
 const ALGO_CATEGORY_ORDER = [
   '儲存估算',
   '儲存',

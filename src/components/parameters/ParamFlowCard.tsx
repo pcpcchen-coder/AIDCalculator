@@ -1,11 +1,13 @@
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
 import { ArrowRight, Info } from 'lucide-react';
+import { useI18n } from '@/i18n';
 
-const STEPS = ['參數管理（此頁）', '配置產生器演算（式 1–19 即時取值）', '結果＋參數快照（可重現）'];
+const STEP_KEYS = ['params.flow.step1', 'params.flow.step2', 'params.flow.step3'];
 
 /** Section 4 — 參數如何被使用（說明卡） */
 export default function ParamFlowCard() {
+  const { t } = useI18n();
   return (
     <motion.section
       initial={{ opacity: 0, y: 24 }}
@@ -18,16 +20,16 @@ export default function ParamFlowCard() {
         <span className="rounded-lg border border-line bg-bg-2 p-2 text-accent">
           <Info className="h-4 w-4" />
         </span>
-        <h2 className="text-base font-medium text-text-0">參數流向</h2>
+        <h2 className="text-base font-medium text-text-0">{t('params.flow.title')}</h2>
       </div>
 
       <div className="flex flex-col items-stretch gap-2 md:flex-row md:items-center">
-        {STEPS.map((step, i) => (
-          <div key={step} className="flex flex-1 flex-col items-center gap-2 md:flex-row">
+        {STEP_KEYS.map((stepKey, i) => (
+          <div key={stepKey} className="flex flex-1 flex-col items-center gap-2 md:flex-row">
             <div className="flex-1 rounded-lg border border-line bg-bg-2 px-3 py-2.5 text-center text-xs text-text-1 md:text-left">
-              {step}
+              {t(stepKey)}
             </div>
-            {i < STEPS.length - 1 && (
+            {i < STEP_KEYS.length - 1 && (
               <motion.span
                 animate={{ opacity: [0.3, 1, 0.3], x: [0, 3, 0] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -41,9 +43,9 @@ export default function ParamFlowCard() {
       </div>
 
       <p className="mt-4 text-xs leading-relaxed text-text-2">
-        每次產生配置時系統會記錄完整參數快照，之後調整參數不影響已存情境。
+        {t('params.flow.note')}
         <Link to="/algorithms" className="ml-1 text-accent transition-colors hover:text-cool">
-          查看算法如何引用參數 →
+          {t('params.flow.link')}
         </Link>
       </p>
     </motion.section>

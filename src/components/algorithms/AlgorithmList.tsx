@@ -10,8 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { tpl, useI18n } from '@/i18n';
 import type { AlgoItem } from './types';
-import { extractVariables, isCustomAlgoCategory, sortAlgoCategories } from './types';
+import { algoCategoryLabel, extractVariables, isCustomAlgoCategory, sortAlgoCategories } from './types';
 
 interface AlgorithmListProps {
   algorithms: AlgoItem[];
@@ -21,6 +22,7 @@ interface AlgorithmListProps {
 
 /** 左欄：搜尋＋分類篩選＋依分類分組的算法清單 */
 export default function AlgorithmList({ algorithms, selectedKey, onSelect }: AlgorithmListProps) {
+  const { t } = useI18n();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
 
@@ -63,17 +65,17 @@ export default function AlgorithmList({ algorithms, selectedKey, onSelect }: Alg
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="搜尋名稱／式號／變數"
+          placeholder={t('algos.list.searchPlaceholder')}
           className="border-line bg-bg-1 pl-9 text-sm text-text-0 placeholder:text-text-2"
         />
       </div>
       <Select value={category} onValueChange={setCategory}>
         <SelectTrigger className="border-line bg-bg-1 text-sm text-text-0">
-          <SelectValue placeholder="全部" />
+          <SelectValue placeholder={t('common.all')} />
         </SelectTrigger>
         <SelectContent className="border-line bg-bg-1">
           <SelectItem value="all" className="text-text-0 focus:bg-bg-3 focus:text-text-0">
-            全部
+            {t('common.all')}
           </SelectItem>
           {categories.map((c) => (
             <SelectItem key={c} value={c} className="text-text-0 focus:bg-bg-3 focus:text-text-0">
@@ -89,8 +91,8 @@ export default function AlgorithmList({ algorithms, selectedKey, onSelect }: Alg
           {grouped.map((g) => (
             <div key={g.category} className="mb-2">
               <div className="px-2 pb-1.5 pt-2 text-xs font-medium tracking-[0.08em] text-text-2">
-                {g.category}
-                <span className="ml-1.5 font-mono text-[10px]">（{g.items.length}）</span>
+                {algoCategoryLabel(t, g.category)}
+                <span className="ml-1.5 font-mono text-[10px]">{tpl(t('algos.list.count'), { n: g.items.length })}</span>
               </div>
               {g.items.map((a, i) => {
                 const selected = a.key === selectedKey;
@@ -122,11 +124,11 @@ export default function AlgorithmList({ algorithms, selectedKey, onSelect }: Alg
                     <div className="flex items-center gap-2">
                       {a.isBuiltin ? (
                         <span className="shrink-0 rounded-md border border-accent/50 px-1.5 py-0.5 font-mono text-[10px] text-accent">
-                          {a.paperRef ?? '內建'}
+                          {a.paperRef ?? t('algos.list.builtin')}
                         </span>
                       ) : (
                         <span className="shrink-0 rounded-md border border-violet/50 px-1.5 py-0.5 text-[10px] tracking-[0.08em] text-violet">
-                          自訂
+                          {t('algos.list.custom')}
                         </span>
                       )}
                       <span className="flex-1 truncate text-sm text-text-0">{a.name}</span>
@@ -138,7 +140,7 @@ export default function AlgorithmList({ algorithms, selectedKey, onSelect }: Alg
                       </span>
                     )}
                     {custom && !a.isBuiltin && (
-                      <span className="sr-only">自訂算法</span>
+                      <span className="sr-only">{t('params.cat.customAlgo')}</span>
                     )}
                   </motion.button>
                 );
@@ -147,7 +149,7 @@ export default function AlgorithmList({ algorithms, selectedKey, onSelect }: Alg
           ))}
         </AnimatePresence>
         {filtered.length === 0 && (
-          <p className="px-3 py-8 text-center text-sm text-text-2">查無符合條件的算法</p>
+          <p className="px-3 py-8 text-center text-sm text-text-2">{t('algos.list.empty')}</p>
         )}
       </div>
     </div>

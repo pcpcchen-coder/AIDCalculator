@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Check, RotateCcw, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { tpl, useI18n } from '@/i18n';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -45,6 +46,7 @@ interface ParameterRowProps {
 }
 
 export default function ParameterRow({ param, flash, onUpdate, onReset, onRequestDelete }: ParameterRowProps) {
+  const { t } = useI18n();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +78,7 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
   const commitEdit = async () => {
     const num = Number(draft);
     if (draft.trim() === '' || Number.isNaN(num) || !Number.isFinite(num)) {
-      setError('請輸入有效數值');
+      setError(t('params.err.invalidNumber'));
       setShakeNonce((n) => n + 1);
       return;
     }
@@ -86,7 +88,7 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
       setEditing(false);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '更新失敗');
+      setError(e instanceof Error ? e.message : t('params.err.updateFailed'));
       setShakeNonce((n) => n + 1);
     } finally {
       setBusy(false);
@@ -101,7 +103,7 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
     try {
       await onUpdate(param.key, v);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '更新失敗');
+      toast.error(e instanceof Error ? e.message : t('params.err.updateFailed'));
     } finally {
       setBusy(false);
     }
@@ -112,7 +114,7 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
     try {
       await onReset(param.key);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '還原失敗');
+      toast.error(e instanceof Error ? e.message : t('params.err.resetFailed'));
     } finally {
       setBusy(false);
     }
@@ -135,12 +137,12 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
           <span className="break-all font-mono text-sm text-text-0">{param.key}</span>
           {param.isCustom && (
             <span className="rounded-full border border-violet/50 px-2 py-0.5 text-[10px] tracking-[0.08em] text-violet">
-              自訂
+              {t('params.row.custom')}
             </span>
           )}
         </div>
         {param.unit && !boolParam && (
-          <div className="mt-0.5 text-xs text-text-2">單位：{param.unit}</div>
+          <div className="mt-0.5 text-xs text-text-2">{tpl(t('params.row.unit'), { unit: param.unit })}</div>
         )}
       </div>
 
@@ -161,13 +163,13 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
                 try {
                   await onUpdate(param.key, checked ? 1 : 0);
                 } catch (e) {
-                  toast.error(e instanceof Error ? e.message : '更新失敗');
+                  toast.error(e instanceof Error ? e.message : t('params.err.updateFailed'));
                 } finally {
                   setBusy(false);
                 }
               }}
             />
-            <span className="font-mono text-sm text-text-1">{param.value === 1 ? '啟用' : '停用'}</span>
+            <span className="font-mono text-sm text-text-1">{param.value === 1 ? t('params.row.enabled') : t('params.row.disabled')}</span>
           </div>
         ) : editing ? (
           <motion.div
@@ -199,7 +201,7 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
               {param.unit && <span className="font-mono text-xs text-text-2">{param.unit}</span>}
               <button
                 type="button"
-                aria-label="確認"
+                aria-label={t('common.confirm')}
                 disabled={busy}
                 onClick={() => void commitEdit()}
                 className="rounded-lg border border-line bg-bg-2 p-1.5 text-green transition-colors hover:border-green/50"
@@ -208,7 +210,7 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
               </button>
               <button
                 type="button"
-                aria-label="取消"
+                aria-label={t('common.cancel')}
                 disabled={busy}
                 onClick={cancelEdit}
                 className="rounded-lg border border-line bg-bg-2 p-1.5 text-text-1 transition-colors hover:border-red/50 hover:text-red"
@@ -233,7 +235,7 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
             <button
               type="button"
               onClick={startEdit}
-              title="點擊直接輸入數值"
+              title={t('params.row.clickToType')}
               className={cn(
                 'rounded-md px-1.5 py-0.5 font-mono text-sm transition-colors hover:bg-bg-1',
                 modified ? 'font-bold text-accent' : 'text-text-0',
@@ -250,7 +252,7 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
             <button
               type="button"
               onClick={startEdit}
-              title="點擊編輯數值"
+              title={t('params.row.clickToEdit')}
               className={cn(
                 'rounded-md px-1.5 py-0.5 font-mono text-sm transition-colors hover:bg-bg-1',
                 modified ? 'font-bold text-accent' : 'text-text-0',
@@ -269,7 +271,7 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
 
       {/* 4. 預設值＋還原 */}
       <div className="flex items-center gap-2">
-        <span className="font-mono text-xs text-text-2">預設 {fmtNum(param.defaultValue)}</span>
+        <span className="font-mono text-xs text-text-2">{tpl(t('params.row.default'), { value: fmtNum(param.defaultValue) })}</span>
         <AnimatePresence>
           {modified && (
             <motion.span
@@ -279,13 +281,13 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
               className="flex items-center gap-1.5"
             >
               <span className="rounded-full border border-power/50 bg-power/10 px-2 py-0.5 text-[10px] tracking-[0.08em] text-power">
-                已修改
+                {t('params.row.modified')}
               </span>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     type="button"
-                    aria-label="還原預設值"
+                    aria-label={t('params.row.resetTooltip')}
                     disabled={busy}
                     onClick={() => void handleReset()}
                     className="rounded-lg border border-line bg-bg-2 p-1.5 text-text-1 transition-colors hover:border-accent/50 hover:text-accent"
@@ -293,7 +295,7 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
                     <RotateCcw className="h-3.5 w-3.5" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>還原為預設值</TooltipContent>
+                <TooltipContent>{t('params.row.resetTooltip')}</TooltipContent>
               </Tooltip>
             </motion.span>
           )}
@@ -307,7 +309,7 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
             <TooltipTrigger asChild>
               <button
                 type="button"
-                aria-label={`刪除參數 ${param.key}`}
+                aria-label={tpl(t('params.row.deleteAria'), { key: param.key })}
                 disabled={busy}
                 onClick={() => onRequestDelete(param)}
                 className="rounded-lg border border-line bg-bg-2 p-1.5 text-text-1 transition-colors hover:border-red/50 hover:text-red"
@@ -315,7 +317,7 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </TooltipTrigger>
-            <TooltipContent>刪除此自訂參數</TooltipContent>
+            <TooltipContent>{t('params.row.deleteTooltip')}</TooltipContent>
           </Tooltip>
         ) : (
           <Tooltip>
@@ -324,7 +326,7 @@ export default function ParameterRow({ param, flash, onUpdate, onReset, onReques
                 <Trash2 className="h-3.5 w-3.5" />
               </span>
             </TooltipTrigger>
-            <TooltipContent>內建參數不可刪除</TooltipContent>
+            <TooltipContent>{t('params.row.deleteDisabled')}</TooltipContent>
           </Tooltip>
         )}
       </div>

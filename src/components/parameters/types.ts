@@ -36,30 +36,64 @@ export interface AuditItem {
 
 export interface CategoryMeta {
   icon: LucideIcon;
-  blurb: string;
 }
 
-/** 分類圖示與一句話說明（資料驅動，未知分類走 fallback） */
+/** 分類圖示（資料驅動，未知分類走 fallback） */
 const CATEGORY_META: Record<string, CategoryMeta> = {
-  架構與設計: { icon: Gauge, blurb: '安全餘裕、pod 佈局與列級規劃的一般參數' },
-  一般: { icon: Gauge, blurb: '安全餘裕、標準機架與 pod 佈局等一般參數' },
-  'IT 模型': { icon: Cpu, blurb: '機架規格正規化與 HPC／Cloud 換算假設' },
-  運算: { icon: Cpu, blurb: 'HPC 換算比、GPU 利用率等運算假設' },
-  儲存: { icon: HardDrive, blurb: '儲存功率占比、IOPS/TFLOPS 與儲存節點規格' },
-  儲存估算: { icon: HardDrive, blurb: '儲存功率占比、IOPS/TFLOPS 與儲存節點規格' },
-  冷卻: { icon: Snowflake, blurb: '乾冷／蒸散模式假設與 CDU 逼近溫差' },
-  配電: { icon: Zap, blurb: 'UPS 預設效率、PDU 損耗與電壓層級' },
-  冷卻與配電設備: { icon: Boxes, blurb: '冷卻與配電基礎設施相關參數' },
-  空間: { icon: Ruler, blurb: 'λ 維護通道占比與 Gray space 係數' },
-  冗餘: { icon: Layers, blurb: 'N+r／xN-y 冗餘語彙相關參數' },
-  自訂: { icon: Sparkles, blurb: '使用者新增的參數，可被自訂算法以 key 引用' },
-  自訂參數: { icon: Sparkles, blurb: '使用者新增的參數，可被自訂算法以 key 引用' },
+  架構與設計: { icon: Gauge },
+  一般: { icon: Gauge },
+  'IT 模型': { icon: Cpu },
+  運算: { icon: Cpu },
+  儲存: { icon: HardDrive },
+  儲存估算: { icon: HardDrive },
+  冷卻: { icon: Snowflake },
+  配電: { icon: Zap },
+  冷卻與配電設備: { icon: Boxes },
+  空間: { icon: Ruler },
+  冗餘: { icon: Layers },
+  自訂: { icon: Sparkles },
+  自訂參數: { icon: Sparkles },
 };
 
-const FALLBACK_META: CategoryMeta = { icon: SlidersHorizontal, blurb: '全域模型參數' };
+const FALLBACK_META: CategoryMeta = { icon: SlidersHorizontal };
 
 export function categoryMeta(category: string): CategoryMeta {
   return CATEGORY_META[category] ?? FALLBACK_META;
+}
+
+/** DB 分類中文值 → i18n key slug（名稱與說明共用 slug） */
+const CATEGORY_SLUGS: Record<string, string> = {
+  架構與設計: 'architecture',
+  一般: 'general',
+  'IT 模型': 'itModel',
+  運算: 'compute',
+  儲存: 'storage',
+  儲存估算: 'storageEst',
+  冷卻: 'cooling',
+  配電: 'powerDist',
+  冷卻與配電設備: 'coolingPower',
+  空間: 'space',
+  冗餘: 'redundancy',
+  冗餘計數: 'redundancyCount',
+  'IT 功率': 'itPower',
+  'IT 空間': 'itSpace',
+  自訂: 'custom',
+  自訂參數: 'customParam',
+  自訂算法: 'customAlgo',
+};
+
+type Translate = (key: string) => string;
+
+/** 分類顯示名（未知分類回退 DB 原文） */
+export function categoryLabel(t: Translate, category: string): string {
+  const slug = CATEGORY_SLUGS[category];
+  return slug ? t(`params.cat.${slug}`) : category;
+}
+
+/** 分類一句話說明（未知分類走 fallback 說明） */
+export function categoryBlurb(t: Translate, category: string): string {
+  const slug = CATEGORY_SLUGS[category];
+  return t(slug ? `params.catBlurb.${slug}` : 'params.catBlurb.fallback');
 }
 
 /** 自訂分類固定排在最後，其餘依偏好順序，未知分類插在中間 */

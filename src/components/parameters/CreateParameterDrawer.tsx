@@ -21,7 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { KEY_PATTERN } from './types';
+import { tpl, useI18n } from '@/i18n';
+import { KEY_PATTERN, categoryLabel } from './types';
 
 export interface CreateParameterInput {
   key: string;
@@ -33,10 +34,10 @@ export interface CreateParameterInput {
 
 type ValueKind = 'number' | 'percent' | 'bool';
 
-const KIND_OPTIONS: { value: ValueKind; label: string }[] = [
-  { value: 'number', label: '數值' },
-  { value: 'percent', label: '百分比' },
-  { value: 'bool', label: '布林' },
+const KIND_OPTIONS: { value: ValueKind; labelKey: string }[] = [
+  { value: 'number', labelKey: 'params.create.kind.number' },
+  { value: 'percent', labelKey: 'params.create.kind.percent' },
+  { value: 'bool', labelKey: 'params.create.kind.bool' },
 ];
 
 interface CreateParameterDrawerProps {
@@ -61,6 +62,7 @@ export default function CreateParameterDrawer({
   categories,
   onCreate,
 }: CreateParameterDrawerProps) {
+  const { t } = useI18n();
   const [suffix, setSuffix] = useState('');
   const [name, setName] = useState('');
   const [kind, setKind] = useState<ValueKind>('number');
@@ -91,15 +93,15 @@ export default function CreateParameterDrawer({
 
   const keyError = useMemo(() => {
     if (!fullKey) return null;
-    if (!KEY_PATTERN.test(fullKey)) return 'key 僅能包含英數與底線，且不得以數字開頭';
-    if (existingKeys.includes(fullKey)) return '此 key 已存在';
+    if (!KEY_PATTERN.test(fullKey)) return t('params.err.keyPattern');
+    if (existingKeys.includes(fullKey)) return t('params.err.keyExists');
     return null;
-  }, [fullKey, existingKeys]);
+  }, [fullKey, existingKeys, t]);
 
   const parsedValue = kind === 'bool' ? (boolValue ? 1 : 0) : Number(valueDraft);
   const valueError =
     kind !== 'bool' && valueDraft.trim() !== '' && (Number.isNaN(parsedValue) || !Number.isFinite(parsedValue))
-      ? '請輸入有效數值'
+      ? t('params.err.invalidNumber')
       : null;
 
   const canSubmit =
@@ -123,7 +125,7 @@ export default function CreateParameterDrawer({
       });
       onOpenChange(false);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '新增失敗');
+      toast.error(e instanceof Error ? e.message : t('params.err.createFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -142,9 +144,9 @@ export default function CreateParameterDrawer({
         className="w-full overflow-y-auto border-l border-line bg-bg-1 sm:max-w-[440px]"
       >
         <SheetHeader>
-          <SheetTitle className="text-text-0">新增自訂參數</SheetTitle>
+          <SheetTitle className="text-text-0">{t('params.create.drawer')}</SheetTitle>
           <SheetDescription className="text-text-1">
-            自訂參數歸類於「自訂」，可在自訂算法公式中以 key 引用。
+            {t('params.create.desc')}
           </SheetDescription>
         </SheetHeader>
 
@@ -172,29 +174,29 @@ export default function CreateParameterDrawer({
             {keyError ? (
               <p className="text-xs text-red">{keyError}</p>
             ) : fullKey ? (
-              <p className="font-mono text-xs text-text-2">完整 key：{fullKey}</p>
+              <p className="font-mono text-xs text-text-2">{tpl(t('params.create.fullKey'), { key: fullKey })}</p>
             ) : (
-              <p className="text-xs text-text-2">小寫英文、數字與底線；自動加上 custom_ 前綴</p>
+              <p className="text-xs text-text-2">{t('params.create.keyHint')}</p>
             )}
           </motion.div>
 
           {/* 中文名稱 */}
           <motion.div {...fieldMotion(1)} className="flex flex-col gap-1.5">
             <Label htmlFor="param-name" className="text-text-1">
-              中文名稱 <span className="text-red">*</span>
+              {t('params.create.name')} <span className="text-red">*</span>
             </Label>
             <Input
               id="param-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="如：儲存功率占比上限"
+              placeholder={t('params.create.namePlaceholder')}
               className="border-line bg-bg-0 text-text-0 placeholder:text-text-2"
             />
           </motion.div>
 
           {/* 型態 Segmented */}
           <motion.div {...fieldMotion(2)} className="flex flex-col gap-1.5">
-            <Label className="text-text-1">型態</Label>
+            <Label className="text-text-1">{t('params.create.kind')}</Label>
             <div className="flex rounded-full border border-line bg-bg-0 p-1">
               {KIND_OPTIONS.map((opt) => (
                 <button
@@ -213,7 +215,7 @@ export default function CreateParameterDrawer({
                       transition={{ duration: 0.2 }}
                     />
                   )}
-                  <span className="relative">{opt.label}</span>
+                  <span className="relative">{t(opt.labelKey)}</span>
                 </button>
               ))}
             </div>
@@ -222,12 +224,12 @@ export default function CreateParameterDrawer({
           {/* 預設值＋單位 */}
           <motion.div {...fieldMotion(3)} className="flex flex-col gap-1.5">
             <Label className="text-text-1">
-              預設值 <span className="text-red">*</span>
+              {t('params.create.defaultValue')} <span className="text-red">*</span>
             </Label>
             {kind === 'bool' ? (
               <div className="flex items-center gap-3 rounded-lg border border-line bg-bg-0 px-3 py-2.5">
                 <Switch checked={boolValue} onCheckedChange={setBoolValue} />
-                <span className="font-mono text-sm text-text-1">{boolValue ? '啟用（1）' : '停用（0）'}</span>
+                <span className="font-mono text-sm text-text-1">{boolValue ? t('params.create.boolOn') : t('params.create.boolOff')}</span>
               </div>
             ) : (
               <div className="flex gap-2">
@@ -235,7 +237,7 @@ export default function CreateParameterDrawer({
                   <Input
                     value={valueDraft}
                     onChange={(e) => setValueDraft(e.target.value)}
-                    placeholder={kind === 'percent' ? '如 4.2' : '如 0.2'}
+                    placeholder={kind === 'percent' ? t('params.create.percentPlaceholder') : t('params.create.valuePlaceholder')}
                     inputMode="decimal"
                     className={cn(
                       'border-line bg-bg-0 font-mono text-text-0 placeholder:text-text-2',
@@ -247,7 +249,7 @@ export default function CreateParameterDrawer({
                   <Input
                     value={unit}
                     onChange={(e) => setUnit(e.target.value)}
-                    placeholder="如 kW、%、m²"
+                    placeholder={t('params.create.unitPlaceholder')}
                     className="w-32 border-line bg-bg-0 font-mono text-text-0 placeholder:text-text-2"
                   />
                 )}
@@ -263,32 +265,32 @@ export default function CreateParameterDrawer({
 
           {/* 分類 */}
           <motion.div {...fieldMotion(4)} className="flex flex-col gap-1.5">
-            <Label className="text-text-1">分類</Label>
+            <Label className="text-text-1">{t('params.create.category')}</Label>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger className="border-line bg-bg-0 text-text-0">
-                <SelectValue placeholder="選擇分類" />
+                <SelectValue placeholder={t('params.create.categoryPlaceholder')} />
               </SelectTrigger>
               <SelectContent className="border-line bg-bg-1">
                 {allCategories.map((c) => (
                   <SelectItem key={c} value={c} className="text-text-0 focus:bg-bg-3 focus:text-text-0">
-                    {c}
+                    {categoryLabel(t, c)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-text-2">預設歸類於「自訂參數」，也可掛到既有分類</p>
+            <p className="text-xs text-text-2">{t('params.create.categoryHint')}</p>
           </motion.div>
 
           {/* 說明 */}
           <motion.div {...fieldMotion(5)} className="flex flex-col gap-1.5">
             <Label htmlFor="param-desc" className="text-text-1">
-              說明（選填）
+              {t('params.create.description')}
             </Label>
             <Textarea
               id="param-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="此參數的用途、引用位置（式號）等"
+              placeholder={t('params.create.descPlaceholder')}
               rows={3}
               className="border-line bg-bg-0 text-text-0 placeholder:text-text-2"
             />
@@ -301,14 +303,14 @@ export default function CreateParameterDrawer({
               onClick={() => onOpenChange(false)}
               className="border-line bg-transparent text-text-1 hover:bg-bg-2 hover:text-text-0"
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               disabled={!canSubmit}
               onClick={() => void handleSubmit()}
               className="bg-accent text-bg-0 hover:bg-accent/90 hover:shadow-glow"
             >
-              {submitting ? '新增中…' : '新增參數'}
+              {submitting ? t('params.create.submitting') : t('params.create.submit')}
             </Button>
           </motion.div>
         </div>

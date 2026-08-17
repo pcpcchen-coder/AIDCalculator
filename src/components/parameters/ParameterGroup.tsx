@@ -1,8 +1,9 @@
 import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
+import { useI18n } from '@/i18n';
 import type { ParamItem } from './types';
-import { categoryMeta, isCustomCategory } from './types';
+import { categoryBlurb, categoryLabel, categoryMeta, isCustomCategory } from './types';
 import ParameterRow from './ParameterRow';
 
 interface ParameterGroupProps {
@@ -21,6 +22,7 @@ const ParameterGroup = forwardRef<HTMLElement, ParameterGroupProps>(function Par
   { category, params, index, flashKey, onUpdate, onReset, onRequestDelete, onCreateClick },
   ref,
 ) {
+  const { t } = useI18n();
   const meta = categoryMeta(category);
   const Icon = meta.icon;
   const empty = params.length === 0;
@@ -42,12 +44,12 @@ const ParameterGroup = forwardRef<HTMLElement, ParameterGroupProps>(function Par
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-medium text-text-0">{category}</h2>
+            <h2 className="text-base font-medium text-text-0">{categoryLabel(t, category)}</h2>
             <span className="rounded-full border border-line bg-bg-2 px-2 py-0.5 font-mono text-[10px] text-text-1">
               {params.length}
             </span>
           </div>
-          <p className="mt-0.5 truncate text-xs text-text-1">{meta.blurb}</p>
+          <p className="mt-0.5 truncate text-xs text-text-1">{categoryBlurb(t, category)}</p>
         </div>
       </header>
 
@@ -55,7 +57,7 @@ const ParameterGroup = forwardRef<HTMLElement, ParameterGroupProps>(function Par
         <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
           <img src="/empty-rack.svg" alt="" className="h-24 w-auto opacity-80" />
           <p className="text-sm text-text-1">
-            {isCustomCategory(category) ? '尚無自訂參數' : '此分類尚無參數'}
+            {isCustomCategory(category) ? t('params.group.emptyCustom') : t('params.group.empty')}
           </p>
           {isCustomCategory(category) && (
             <button
@@ -64,7 +66,7 @@ const ParameterGroup = forwardRef<HTMLElement, ParameterGroupProps>(function Par
               className="flex items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-1.5 text-xs text-accent transition-all hover:shadow-glow"
             >
               <Plus className="h-3.5 w-3.5" />
-              新增自訂參數
+              {t('params.group.createCustom')}
             </button>
           )}
         </div>

@@ -25,6 +25,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { tpl, useI18n } from '@/i18n';
 import AlgorithmList from '@/components/algorithms/AlgorithmList';
 import AlgorithmDetail from '@/components/algorithms/AlgorithmDetail';
 import type { AlgoUpdateData } from '@/components/algorithms/AlgorithmDetail';
@@ -35,6 +36,7 @@ import { ALGO_KEY_PATTERN } from '@/components/algorithms/types';
 import type { ParamItem } from '@/components/parameters/types';
 
 export default function Algorithms() {
+  const { t } = useI18n();
   const utils = trpc.useUtils();
   const algosQuery = trpc.algorithms.list.useQuery();
   const paramsQuery = trpc.parameters.list.useQuery();
@@ -123,26 +125,26 @@ export default function Algorithms() {
     a.download = 'dcgen-algorithms.json';
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('已匯出算法定義 JSON');
+    toast.success(t('algos.export.toast'));
   };
 
   const dupKeyError = useMemo(() => {
     if (!duplicateKey) return null;
-    if (!ALGO_KEY_PATTERN.test(duplicateKey)) return 'key 僅能包含英數與底線，且不得以數字開頭';
-    if (algorithms.some((a) => a.key === duplicateKey)) return '此 key 已存在';
+    if (!ALGO_KEY_PATTERN.test(duplicateKey)) return t('algos.err.keyPattern');
+    if (algorithms.some((a) => a.key === duplicateKey)) return t('algos.err.keyExists');
     return null;
-  }, [duplicateKey, algorithms]);
+  }, [duplicateKey, algorithms, t]);
 
   const handleDuplicate = async () => {
     if (!duplicateTarget || !duplicateKey || dupKeyError) return;
     try {
       await duplicateMut.mutateAsync({ key: duplicateTarget.key, newKey: duplicateKey });
-      toast.success(`已複製為自訂算法 ${duplicateKey}，可編輯公式`);
+      toast.success(tpl(t('algos.toast.duplicated'), { key: duplicateKey }));
       setSelectedKey(duplicateKey);
       setDuplicateTarget(null);
       scrollToDetail();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '複製失敗');
+      toast.error(e instanceof Error ? e.message : t('algos.toast.duplicateFailed'));
     }
   };
 
@@ -150,20 +152,20 @@ export default function Algorithms() {
     if (!deleteTarget) return;
     try {
       await deleteMut.mutateAsync({ key: deleteTarget.key });
-      toast.success(`算法 ${deleteTarget.key} 已刪除`);
+      toast.success(tpl(t('algos.toast.deleted'), { key: deleteTarget.key }));
       if (selectedKey === deleteTarget.key) setSelectedKey(null);
       setDeleteTarget(null);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '刪除失敗');
+      toast.error(e instanceof Error ? e.message : t('algos.toast.deleteFailed'));
     }
   };
 
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-10 md:px-8 md:py-12">
       <PageHeader
-        breadcrumb={['首頁', '算法管理']}
-        title="算法管理"
-        description="DCGen 論文式 1–19 的註冊表實作。每條算法具名、具版本、公式透明；可調整參數綁定，或以安全公式求值器新增自訂算法。"
+        breadcrumb={[t('params.crumb.home'), t('algos.page.title')]}
+        title={t('algos.page.title')}
+        description={t('algos.page.desc')}
         action={
           <div className="flex items-center gap-2">
             <Button
@@ -173,7 +175,7 @@ export default function Algorithms() {
               className="border-line bg-transparent text-text-1 hover:bg-bg-2 hover:text-text-0"
             >
               <Download className="h-4 w-4" />
-              匯出算法定義 JSON
+              {t('algos.export.button')}
             </Button>
             <Button
               onClick={() => {
@@ -183,7 +185,7 @@ export default function Algorithms() {
               className="bg-accent text-bg-0 shadow-glow transition-all hover:scale-[1.02] hover:shadow-glow-strong active:scale-[0.97]"
             >
               <Plus className="h-4 w-4" />
-              新增算法
+              {t('algos.create.button')}
             </Button>
           </div>
         }
@@ -197,7 +199,7 @@ export default function Algorithms() {
       ) : algosQuery.isError ? (
         <div className="flex items-center gap-3 rounded-xl border border-red/40 bg-red/5 px-5 py-6 text-sm text-red">
           <TriangleAlert className="h-5 w-5 shrink-0" />
-          算法載入失敗：{algosQuery.error.message}
+          {tpl(t('algos.loadFailed'), { msg: algosQuery.error.message })}
         </div>
       ) : (
         <>
@@ -261,15 +263,18 @@ export default function Algorithms() {
       >
         <DialogContent className="border-line bg-bg-1">
           <DialogHeader>
-            <DialogTitle className="text-text-0">複製為自訂算法</DialogTitle>
+            <DialogTitle className="text-text-0">{t('algos.dup.title')}</DialogTitle>
             <DialogDescription className="text-text-1">
-              複製 <span className="font-mono text-accent">{duplicateTarget?.key}</span>
-              （{duplicateTarget?.name}）為自訂算法，複製後可修改公式與綁定。
+              {t('algos.dup.descA')}
+              <span className="font-mono text-accent">{duplicateTarget?.key}</span>
+              {t('algos.dup.descMid')}
+              {duplicateTarget?.name}
+              {t('algos.dup.descB')}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="dup-key" className="text-text-1">
-              新算法 Key
+              {t('algos.dup.keyLabel')}
             </Label>
             <Input
               id="dup-key"
@@ -288,14 +293,14 @@ export default function Algorithms() {
               onClick={() => setDuplicateTarget(null)}
               className="border-line bg-transparent text-text-1 hover:bg-bg-2 hover:text-text-0"
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               disabled={!duplicateKey || !!dupKeyError || duplicateMut.isPending}
               onClick={() => void handleDuplicate()}
               className="bg-accent text-bg-0 hover:bg-accent/90"
             >
-              {duplicateMut.isPending ? '複製中…' : '複製'}
+              {duplicateMut.isPending ? t('algos.dup.submitting') : t('algos.dup.submit')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -305,22 +310,24 @@ export default function Algorithms() {
       <AlertDialog open={deleteTarget !== null} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent className="border-line bg-bg-1">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-text-0">確認刪除？</AlertDialogTitle>
+            <AlertDialogTitle className="text-text-0">{t('common.deleteConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription className="text-text-1">
-              即將刪除自訂算法{' '}
+              {t('algos.delete.descA')}
               <span className="font-mono text-accent">{deleteTarget?.key}</span>
-              （{deleteTarget?.name}）。此操作無法復原。
+              {t('algos.delete.descMid')}
+              {deleteTarget?.name}
+              {t('algos.delete.descB')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="border-line bg-transparent text-text-1 hover:bg-bg-2 hover:text-text-0">
-              取消
+              {t('common.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => void handleDelete()}
               className="bg-red text-bg-0 hover:bg-red/90"
             >
-              確認刪除
+              {t('algos.delete.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

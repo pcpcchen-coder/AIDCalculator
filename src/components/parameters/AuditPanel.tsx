@@ -2,14 +2,15 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, History, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { tpl, useI18n } from '@/i18n';
 import type { AuditItem, ParamItem } from './types';
 import { fmtNum, isModified } from './types';
 
-const ACTION_STYLE: Record<string, { label: string; className: string }> = {
-  update: { label: '更新', className: 'border-accent/50 text-accent' },
-  create: { label: '新增', className: 'border-green/50 text-green' },
-  reset: { label: '還原', className: 'border-power/50 text-power' },
-  delete: { label: '刪除', className: 'border-red/50 text-red' },
+const ACTION_STYLE: Record<string, { labelKey: string; className: string }> = {
+  update: { labelKey: 'params.audit.action.update', className: 'border-accent/50 text-accent' },
+  create: { labelKey: 'params.audit.action.create', className: 'border-green/50 text-green' },
+  reset: { labelKey: 'params.audit.action.reset', className: 'border-power/50 text-power' },
+  delete: { labelKey: 'params.audit.action.delete', className: 'border-red/50 text-red' },
 };
 
 function fmtTime(t: Date | string): string {
@@ -27,6 +28,7 @@ interface AuditPanelProps {
 
 /** 變更紀錄面板：未還原修改清單 ＋ 最近 50 筆 audits 時間軸 */
 export default function AuditPanel({ params, audits, onReset }: AuditPanelProps) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const modifiedParams = params.filter(isModified);
@@ -47,11 +49,11 @@ export default function AuditPanel({ params, audits, onReset }: AuditPanelProps)
         <span className="rounded-lg border border-line bg-bg-1 p-2 text-accent">
           <History className="h-4 w-4" />
         </span>
-        <span className="flex-1 text-base font-medium text-text-0">變更紀錄</span>
+        <span className="flex-1 text-base font-medium text-text-0">{t('params.audit.title')}</span>
         {modifiedParams.length > 0 && (
           <span className="flex items-center gap-1.5 rounded-full border border-power/50 bg-power/10 px-2.5 py-0.5 text-xs text-power">
             <span className="h-1.5 w-1.5 rounded-full bg-power" />
-            {modifiedParams.length} 筆未還原
+            {tpl(t('params.audit.pendingCount'), { n: modifiedParams.length })}
           </span>
         )}
         <ChevronDown
@@ -71,10 +73,10 @@ export default function AuditPanel({ params, audits, onReset }: AuditPanelProps)
             <div className="border-t border-line px-4 py-4 md:px-5">
               {/* 本次工作階段未還原修改 */}
               <h3 className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-2">
-                未還原的修改
+                {t('params.audit.pending')}
               </h3>
               {modifiedParams.length === 0 ? (
-                <p className="mb-4 text-sm text-text-2">無未還原變更</p>
+                <p className="mb-4 text-sm text-text-2">{t('params.audit.noPending')}</p>
               ) : (
                 <ul className="mb-4 flex flex-col gap-1.5">
                   {modifiedParams.map((p) => (
@@ -100,7 +102,7 @@ export default function AuditPanel({ params, audits, onReset }: AuditPanelProps)
                         className="ml-auto flex items-center gap-1 rounded-md border border-line bg-bg-2 px-2 py-1 text-xs text-text-1 transition-colors hover:border-accent/50 hover:text-accent disabled:opacity-50"
                       >
                         <RotateCcw className="h-3 w-3" />
-                        還原
+                        {t('params.audit.reset')}
                       </button>
                     </li>
                   ))}
@@ -109,10 +111,10 @@ export default function AuditPanel({ params, audits, onReset }: AuditPanelProps)
 
               {/* 最近 50 筆 audits */}
               <h3 className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-2">
-                最近異動（{audits.length} 筆）
+                {tpl(t('params.audit.recent'), { n: audits.length })}
               </h3>
               {audits.length === 0 ? (
-                <p className="text-sm text-text-2">尚無變更紀錄</p>
+                <p className="text-sm text-text-2">{t('params.audit.empty')}</p>
               ) : (
                 <ul className="flex max-h-72 flex-col gap-1 overflow-y-auto pr-1">
                   {audits.map((a) => {
@@ -129,7 +131,7 @@ export default function AuditPanel({ params, audits, onReset }: AuditPanelProps)
                             style.className,
                           )}
                         >
-                          {style.label}
+                          {t(style.labelKey)}
                         </span>
                         <span className="font-mono text-text-0">{a.parameterKey}</span>
                         <span className="font-mono text-text-2">
