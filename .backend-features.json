@@ -1,1 +1,6 @@
-{"features":["db"]}
+{
+  "version": 1,
+  "features": ["db"],
+  "app_id": "1a00d55e-e8d2-82ad-8000-0000902fbd00",
+  "initialized_at": "2026-08-17T05:18:12Z"
+}
