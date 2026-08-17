@@ -82,10 +82,12 @@ function tokenize(src: string): Token[] {
 
 class Parser {
   private pos = 0;
-  constructor(
-    private tokens: Token[],
-    private vars: Record<string, number>,
-  ) {}
+  private tokens: Token[];
+  private vars: Record<string, number>;
+  constructor(tokens: Token[], vars: Record<string, number>) {
+    this.tokens = tokens;
+    this.vars = vars;
+  }
 
   private peek(): Token | undefined {
     return this.tokens[this.pos];

@@ -408,7 +408,6 @@ export function computeNonIt(
   it: ItResult,
   input: GenerateInput,
   equipment: EngineEquipment[],
-  params: EngineParams,
 ): NonItResult[] {
   const dcKw = it.totalPeakPowerMw * 1e3;
   const sm = input.safetyMargin;

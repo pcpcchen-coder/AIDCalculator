@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router';
+import { Toaster } from 'sonner';
 import Layout from '@/components/Layout';
 import Home from '@/pages/Home';
 import Generator from '@/pages/Generator';
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/algorithms" element={<Algorithms />} />
         <Route path="/docs" element={<Docs />} />
       </Routes>
+      <Toaster theme="dark" position="top-right" richColors closeButton />
     </Layout>
   );
 }
