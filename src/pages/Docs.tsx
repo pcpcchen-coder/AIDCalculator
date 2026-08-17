@@ -9,6 +9,7 @@ import PowerSection from '@/components/docs/PowerSection';
 import RedundancySection from '@/components/docs/RedundancySection';
 import ParamLayersSection from '@/components/docs/ParamLayersSection';
 import SourcesSection from '@/components/docs/SourcesSection';
+import ManualSection from '@/components/docs/ManualSection';
 import CitationSection from '@/components/docs/CitationSection';
 import { DOC_SECTIONS } from '@/components/docs/docs-data';
 
@@ -79,6 +80,7 @@ export default function Docs() {
             <RedundancySection />
             <ParamLayersSection />
             <SourcesSection />
+            <ManualSection />
             <CitationSection />
           </div>
         </div>

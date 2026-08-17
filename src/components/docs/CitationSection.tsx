@@ -1,17 +1,19 @@
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Copy, ExternalLink } from 'lucide-react';
+import { useI18n } from '@/i18n';
 import DocSection from './DocSection';
 import { ARXIV_URL, BIBTEX, DELTA_URL, GITHUB_URL } from './docs-data';
 
 const LINKS = [
-  { href: ARXIV_URL, label: 'arXiv:2604.09616 論文' },
-  { href: GITHUB_URL, label: 'GitHub REPO（WedanEmmanuel/DCGen）' },
-  { href: DELTA_URL, label: '台達電子官方網站' },
+  { href: ARXIV_URL, labelKey: 'docs.citation.linkArxiv' },
+  { href: GITHUB_URL, labelKey: 'docs.citation.linkGithub' },
+  { href: DELTA_URL, labelKey: 'docs.citation.linkDelta' },
 ];
 
 /** Section 10 — 引用：BibTeX 卡＋複製按鈕＋連結列 */
 export default function CitationSection() {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   const timerRef = useRef(0);
 
@@ -33,7 +35,7 @@ export default function CitationSection() {
   };
 
   return (
-    <DocSection id="citation" title="引用">
+    <DocSection id="citation" title={t('docs.citation.title')}>
       <div className="flex flex-col gap-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -56,7 +58,7 @@ export default function CitationSection() {
               }
             >
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-              {copied ? '已複製' : '複製 BibTeX'}
+              {copied ? t('docs.citation.copied') : t('docs.citation.copy')}
             </button>
           </div>
           <pre className="overflow-x-auto px-5 py-4 font-mono text-xs leading-relaxed text-text-1 md:text-sm">
@@ -73,7 +75,7 @@ export default function CitationSection() {
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 text-sm text-accent transition-colors hover:text-cool"
               >
-                {link.label}
+                {t(link.labelKey)}
                 <ExternalLink className="h-3.5 w-3.5" />
               </a>
             </li>

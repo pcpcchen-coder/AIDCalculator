@@ -1,40 +1,42 @@
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
 import { ArrowRight, Database, Keyboard, LineChart } from 'lucide-react';
+import { useI18n } from '@/i18n';
 import DocSection from './DocSection';
 
 const LAYERS = [
   {
     icon: Keyboard,
-    title: '使用者輸入',
-    desc: '產生器表單：DC 類型、規模（機架數／功率目標）、年份、冗餘模式、安全餘裕、優化目標。',
-    bullets: ['AI 訓練 / 推論 / 混合 / 雲端', '2024 / 2027 / 2029', 'N / N+1 / N+2 / 2N / xN-y'],
-    link: { to: '/generator', label: '前往配置產生器' },
+    titleKey: 'docs.paramLayers.input.title',
+    descKey: 'docs.paramLayers.input.desc',
+    bulletKeys: ['docs.paramLayers.input.b1', 'docs.paramLayers.input.b2', 'docs.paramLayers.input.b3'],
+    link: { to: '/generator', labelKey: 'docs.common.goGenerator' },
   },
   {
     icon: Database,
-    title: '內部參數',
-    desc: '參數管理中的全域常數：安全餘裕、儲存功率占比 4.2%、IOPS 換算 404、走道比例 2/3、機櫃高度 42U 等。',
-    bullets: ['安全餘裕（safety margin）', '4.2% · 404 · 2/3 · 42U', '全部入庫、可調可擴充'],
-    link: { to: '/parameters', label: '前往參數管理' },
+    titleKey: 'docs.paramLayers.internal.title',
+    descKey: 'docs.paramLayers.internal.desc',
+    bulletKeys: ['docs.paramLayers.internal.b1', 'docs.paramLayers.internal.b2', 'docs.paramLayers.internal.b3'],
+    link: { to: '/parameters', labelKey: 'docs.common.goParameters' },
   },
   {
     icon: LineChart,
-    title: '輸出',
-    desc: '演算結果：空間與功率指標、White / Gray space 面積、分層設備 BOM；每次演算皆記錄輸入與參數快照。',
-    bullets: ['IT 機架分佈 / 功率密度', 'White / Gray space', '設備 BOM（對應設備型錄）'],
-    link: { to: '/catalog', label: '前往設備型錄' },
+    titleKey: 'docs.paramLayers.output.title',
+    descKey: 'docs.paramLayers.output.desc',
+    bulletKeys: ['docs.paramLayers.output.b1', 'docs.paramLayers.output.b2', 'docs.paramLayers.output.b3'],
+    link: { to: '/catalog', labelKey: 'docs.common.goCatalog' },
   },
 ];
 
 /** Section 8 — 參數三層架構（使用者輸入 → 內部參數 → 輸出） */
 export default function ParamLayersSection() {
+  const { t } = useI18n();
   return (
-    <DocSection id="param-layers" title="參數三層架構">
+    <DocSection id="param-layers" title={t('docs.paramLayers.title')}>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col items-stretch gap-3 md:flex-row md:items-center">
           {LAYERS.map((layer, i) => (
-            <div key={layer.title} className="flex flex-1 flex-col items-center gap-3 md:flex-row">
+            <div key={layer.titleKey} className="flex flex-1 flex-col items-center gap-3 md:flex-row">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -44,14 +46,14 @@ export default function ParamLayersSection() {
               >
                 <div className="flex items-center gap-2.5">
                   <layer.icon className="h-4 w-4 text-accent" />
-                  <h3 className="text-base font-medium text-text-0">{layer.title}</h3>
+                  <h3 className="text-base font-medium text-text-0">{t(layer.titleKey)}</h3>
                 </div>
-                <p className="mt-2.5 text-sm leading-relaxed text-text-1">{layer.desc}</p>
+                <p className="mt-2.5 text-sm leading-relaxed text-text-1">{t(layer.descKey)}</p>
                 <ul className="mt-3 flex flex-col gap-1.5">
-                  {layer.bullets.map((b) => (
-                    <li key={b} className="flex items-center gap-2 font-mono text-xs text-text-2">
+                  {layer.bulletKeys.map((key) => (
+                    <li key={key} className="flex items-center gap-2 font-mono text-xs text-text-2">
                       <span className="h-1 w-1 rounded-full bg-accent" />
-                      {b}
+                      {t(key)}
                     </li>
                   ))}
                 </ul>
@@ -59,7 +61,7 @@ export default function ParamLayersSection() {
                   to={layer.link.to}
                   className="mt-4 inline-flex w-fit items-center gap-1.5 text-sm text-accent transition-colors hover:text-cool"
                 >
-                  {layer.link.label}
+                  {t(layer.link.labelKey)}
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </motion.div>
@@ -80,9 +82,9 @@ export default function ParamLayersSection() {
         </div>
 
         <p className="text-sm leading-relaxed text-text-1">
-          三層全部入庫：使用者輸入、當下生效的內部參數，以及演算輸出會一併保存為
-          <strong className="text-text-0">情境快照（scenario snapshot）</strong>
-          ，確保任何一次產生的配置都可回溯、可重現。算法本體則可於「算法管理」檢視公式並試算。
+          {t('docs.paramLayers.notePre')}
+          <strong className="text-text-0">{t('docs.paramLayers.noteEm')}</strong>
+          {t('docs.paramLayers.notePost')}
         </p>
 
         <div className="flex flex-wrap gap-x-6 gap-y-2">
@@ -90,14 +92,14 @@ export default function ParamLayersSection() {
             to="/parameters"
             className="inline-flex items-center gap-1.5 text-sm text-accent transition-colors hover:text-cool"
           >
-            前往參數管理
+            {t('docs.common.goParameters')}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
           <Link
             to="/algorithms"
             className="inline-flex items-center gap-1.5 text-sm text-accent transition-colors hover:text-cool"
           >
-            前往算法管理
+            {t('docs.common.goAlgorithms')}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>

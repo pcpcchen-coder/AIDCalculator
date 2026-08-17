@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calculator } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/i18n';
 import DocSection from './DocSection';
 import { useAnimatedNumber } from './use-animated-number';
 
@@ -9,12 +10,12 @@ type RedundancyMode = 'N' | 'N+1' | 'N+2' | '2N' | 'xN-y';
 
 const MODES: RedundancyMode[] = ['N', 'N+1', 'N+2', '2N', 'xN-y'];
 
-const DEFINITIONS: { term: string; def: string }[] = [
-  { term: 'N', def: '恰好滿足需求的台數，無備援。' },
-  { term: 'N+1', def: '需求台數＋1 台備援。' },
-  { term: 'N+2', def: '需求台數＋2 台備援。' },
-  { term: '2N', def: '完整雙套系統（A/B 路），任一路可獨立承載全部負載。' },
-  { term: 'xN-y', def: 'x 台分攤負載，y 台即足夠；有效容量 = y/x × 額定容量（式 15）。' },
+const DEFINITIONS: { term: string; defKey: string }[] = [
+  { term: 'N', defKey: 'docs.redundancy.defN' },
+  { term: 'N+1', defKey: 'docs.redundancy.defNPlus1' },
+  { term: 'N+2', defKey: 'docs.redundancy.defNPlus2' },
+  { term: '2N', defKey: 'docs.redundancy.def2N' },
+  { term: 'xN-y', defKey: 'docs.redundancy.defXnY' },
 ];
 
 interface CalcResult {
@@ -74,6 +75,7 @@ const inputClass =
 
 /** Section 7 — 冗餘語彙：圖解＋定義列＋互動冗餘計算器 */
 export default function RedundancySection() {
+  const { t } = useI18n();
   const [mode, setMode] = useState<RedundancyMode>('N+1');
   const [demand, setDemand] = useState('1200');
   const [unitCap, setUnitCap] = useState('500');
@@ -93,7 +95,7 @@ export default function RedundancySection() {
   );
 
   return (
-    <DocSection id="redundancy" title="冗餘語彙">
+    <DocSection id="redundancy" title={t('docs.redundancy.title')}>
       <div className="flex flex-col gap-6">
         {/* 全寬 redundancy-diagram.svg */}
         <motion.div
@@ -105,7 +107,7 @@ export default function RedundancySection() {
         >
           <img
             src="/redundancy-diagram.svg"
-            alt="冗餘語彙圖解：N / N+1 / N+2 / 2N / xN-y 機組配置"
+            alt={t('docs.redundancy.imgAlt')}
             loading="lazy"
             className="h-auto w-full"
           />
@@ -125,7 +127,7 @@ export default function RedundancySection() {
               <span className="w-14 shrink-0 rounded-md border border-accent/40 bg-accent/10 px-2 py-0.5 text-center font-mono text-xs font-medium text-accent">
                 {d.term}
               </span>
-              <span className="text-sm leading-relaxed text-text-1">{d.def}</span>
+              <span className="text-sm leading-relaxed text-text-1">{t(d.defKey)}</span>
             </motion.li>
           ))}
         </ul>
@@ -140,31 +142,31 @@ export default function RedundancySection() {
         >
           <div className="flex items-center gap-2.5">
             <Calculator className="h-4 w-4 text-accent" />
-            <h3 className="text-base font-medium text-text-0">冗餘計算器</h3>
-            <span className="font-mono text-xs text-text-2">— 算法試算面板展示版</span>
+            <h3 className="text-base font-medium text-text-0">{t('docs.redundancy.calc.title')}</h3>
+            <span className="font-mono text-xs text-text-2">{t('docs.redundancy.calc.subtitle')}</span>
           </div>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs text-text-1">需求容量（kW）</span>
+              <span className="text-xs text-text-1">{t('docs.redundancy.calc.demand')}</span>
               <input
                 type="number"
                 min={0}
                 value={demand}
                 onChange={(e) => setDemand(e.target.value)}
                 className={inputClass}
-                aria-label="需求容量 kW"
+                aria-label={t('docs.redundancy.calc.demandAria')}
               />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs text-text-1">單機容量（kW）</span>
+              <span className="text-xs text-text-1">{t('docs.redundancy.calc.unit')}</span>
               <input
                 type="number"
                 min={0}
                 value={unitCap}
                 onChange={(e) => setUnitCap(e.target.value)}
                 className={inputClass}
-                aria-label="單機容量 kW"
+                aria-label={t('docs.redundancy.calc.unitAria')}
               />
             </label>
           </div>
@@ -211,7 +213,7 @@ export default function RedundancySection() {
                     value={x}
                     onChange={(e) => setX(e.target.value)}
                     className={cn(inputClass, 'w-20 px-2 py-1.5')}
-                    aria-label="xN-y 之 x（分攤台數）"
+                    aria-label={t('docs.redundancy.calc.ariaX')}
                   />
                 </label>
                 <label className="flex items-center gap-1.5 text-xs text-text-1">
@@ -222,7 +224,7 @@ export default function RedundancySection() {
                     value={y}
                     onChange={(e) => setY(e.target.value)}
                     className={cn(inputClass, 'w-20 px-2 py-1.5')}
-                    aria-label="xN-y 之 y（足夠台數）"
+                    aria-label={t('docs.redundancy.calc.ariaY')}
                   />
                 </label>
               </motion.div>
@@ -232,15 +234,23 @@ export default function RedundancySection() {
           {/* 結果（Mono count-up 400ms） */}
           {result.valid ? (
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <ResultCell label={mode === 'xN-y' ? '需求台數（未取整）' : '需求台數 N'} value={result.need} suffix="台" />
-              <ResultCell label="安裝台數" value={result.installed} suffix="台" />
-              <ResultCell label="有效容量" value={result.effectiveKw} suffix="kW" />
+              <ResultCell
+                label={mode === 'xN-y' ? t('docs.redundancy.calc.needRaw') : t('docs.redundancy.calc.needN')}
+                value={result.need}
+                suffix={t('docs.redundancy.calc.units')}
+              />
+              <ResultCell
+                label={t('docs.redundancy.calc.installed')}
+                value={result.installed}
+                suffix={t('docs.redundancy.calc.units')}
+              />
+              <ResultCell label={t('docs.redundancy.calc.effective')} value={result.effectiveKw} suffix="kW" />
             </div>
           ) : (
             <p className="mt-5 rounded-lg border border-power/40 bg-power/5 px-4 py-3 text-sm text-power">
               {mode === 'xN-y'
-                ? '請輸入有效的需求容量、單機容量，且 xN-y 需滿足 x > y ≥ 1。'
-                : '請輸入有效的需求容量與單機容量（皆須大於 0）。'}
+                ? t('docs.redundancy.calc.errorXnY')
+                : t('docs.redundancy.calc.errorGeneric')}
             </p>
           )}
         </motion.div>

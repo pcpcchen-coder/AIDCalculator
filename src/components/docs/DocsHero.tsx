@@ -1,13 +1,12 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { useI18n } from '@/i18n';
 import { useCountUp } from './use-animated-number';
 
-const TITLE = '模型說明';
-
 const STATS = [
-  { value: 19, suffix: '條', label: '算法' },
-  { value: 8, suffix: '類', label: '設備' },
-  { value: 4, suffix: '類', label: '資料中心' },
+  { value: 19, suffixKey: 'docs.hero.stat.algorithms.suffix', labelKey: 'docs.hero.stat.algorithms.label' },
+  { value: 8, suffixKey: 'docs.hero.stat.equipment.suffix', labelKey: 'docs.hero.stat.equipment.label' },
+  { value: 4, suffixKey: 'docs.hero.stat.dcTypes.suffix', labelKey: 'docs.hero.stat.dcTypes.label' },
 ];
 
 function HeroStat({ value, suffix, label, start }: { value: number; suffix: string; label: string; start: boolean }) {
@@ -16,7 +15,7 @@ function HeroStat({ value, suffix, label, start }: { value: number; suffix: stri
     <div className="flex flex-col items-end">
       <span className="font-mono text-3xl font-bold text-text-0 md:text-4xl">
         {Math.round(display)}
-        <span className="ml-1 text-base font-medium text-text-2">{suffix}</span>
+        {suffix && <span className="ml-1 text-base font-medium text-text-2">{suffix}</span>}
       </span>
       <span className="mt-1 text-xs text-text-2">{label}</span>
     </div>
@@ -25,8 +24,10 @@ function HeroStat({ value, suffix, label, start }: { value: number; suffix: stri
 
 /** Section 1 — 頁首 Hero（精簡版，40vh）：藍圖網格＋右側淡化冷卻迴路圖 */
 export default function DocsHero() {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.3 });
+  const title = t('docs.hero.title');
 
   return (
     <div ref={ref} className="blueprint-grid relative overflow-hidden border-b border-line bg-bg-1">
@@ -52,9 +53,9 @@ export default function DocsHero() {
           >
             arXiv:2604.09616
           </motion.span>
-          {/* 標題字元級 stagger 0.03s */}
+          {/* 標題字元級 stagger 0.03s（空白字元以 NBSP 保留寬度） */}
           <h1 className="mt-4 font-display text-4xl font-bold tracking-[-0.02em] text-text-0 md:text-6xl">
-            {TITLE.split('').map((ch, i) => (
+            {title.split('').map((ch, i) => (
               <motion.span
                 key={`${ch}-${i}`}
                 className="inline-block"
@@ -62,7 +63,7 @@ export default function DocsHero() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number], delay: 0.1 + i * 0.03 }}
               >
-                {ch}
+                {ch === ' ' ? '\u00A0' : ch}
               </motion.span>
             ))}
           </h1>
@@ -72,9 +73,7 @@ export default function DocsHero() {
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.3 }}
             className="mt-4 max-w-xl text-sm leading-relaxed text-text-1 md:text-base"
           >
-            DCGen（Data Center configuration Generator）由 University of Chicago 與 Argonne
-            National Laboratory 提出：給定 IT 需求，自動推導冷卻與配電基礎設施的空間、功率與設備清單。本平台為其
-            Web 資料庫實作。
+            {t('docs.hero.subtitle')}
           </motion.p>
         </div>
         {/* 右側小統計（Mono），count-up 延遲 0.4s */}
@@ -85,7 +84,7 @@ export default function DocsHero() {
           className="flex shrink-0 gap-8 md:flex-col md:items-end md:gap-5 md:pb-1"
         >
           {STATS.map((s) => (
-            <HeroStat key={s.label} {...s} start={inView} />
+            <HeroStat key={s.labelKey} value={s.value} suffix={t(s.suffixKey)} label={t(s.labelKey)} start={inView} />
           ))}
         </motion.div>
       </div>

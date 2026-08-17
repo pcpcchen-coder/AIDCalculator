@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/i18n';
 import type { DocSectionMeta } from './docs-data';
 
 interface SectionNavProps {
@@ -12,11 +13,12 @@ interface SectionNavProps {
  * 桌面：左側 200px sticky 直列；行動版：頂部 sticky 橫滑膠囊列。
  */
 export default function SectionNav({ sections, activeId, onNavigate }: SectionNavProps) {
+  const { t } = useI18n();
   return (
     <>
       {/* 桌面版：sticky 直列 */}
-      <nav aria-label="章節導覽" className="sticky top-8 hidden w-[200px] shrink-0 self-start lg:block">
-        <div className="mb-3 font-mono text-xs uppercase tracking-[0.08em] text-text-2">目錄</div>
+      <nav aria-label={t('docs.nav.aria')} className="sticky top-8 hidden w-[200px] shrink-0 self-start lg:block">
+        <div className="mb-3 font-mono text-xs uppercase tracking-[0.08em] text-text-2">{t('docs.nav.toc')}</div>
         <ul className="flex flex-col gap-1">
           {sections.map((s) => {
             const active = s.id === activeId;
@@ -36,7 +38,7 @@ export default function SectionNav({ sections, activeId, onNavigate }: SectionNa
                       active ? 'opacity-100' : 'opacity-0',
                     )}
                   />
-                  {s.label}
+                  {t(s.labelKey)}
                 </button>
               </li>
             );
@@ -46,7 +48,7 @@ export default function SectionNav({ sections, activeId, onNavigate }: SectionNa
 
       {/* 行動版：頂部 sticky 橫滑膠囊列 */}
       <nav
-        aria-label="章節導覽"
+        aria-label={t('docs.nav.aria')}
         className="no-scrollbar sticky top-[57px] z-30 -mx-4 flex gap-2 overflow-x-auto border-b border-line bg-bg-0/90 px-4 py-2.5 backdrop-blur lg:hidden"
       >
         {sections.map((s) => {
@@ -63,7 +65,7 @@ export default function SectionNav({ sections, activeId, onNavigate }: SectionNa
                   : 'border-line bg-bg-2 text-text-2 hover:text-text-1',
               )}
             >
-              {s.label}
+              {t(s.labelKey)}
             </button>
           );
         })}
