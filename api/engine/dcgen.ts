@@ -520,7 +520,7 @@ export function computeDatacenter(
   params: EngineParams,
 ): DatacenterResult {
   const it = computeItResult(config, input, params);
-  const nonIt = computeNonIt(it, input, equipment, params);
+  const nonIt = computeNonIt(it, input, equipment);
   const { pods, maxPodPowerKw } = arrangeRacksPerPod(it, input.rackPerRow, input.rowsPerPod);
   return {
     configName: config.name,
