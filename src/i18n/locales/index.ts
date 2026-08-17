@@ -20,6 +20,15 @@ import paramsZhTW from "./params/zh-TW";
 import docsEn from "./docs/en";
 import docsZhCN from "./docs/zh-CN";
 import docsZhTW from "./docs/zh-TW";
+import studioEn from "./studio/en";
+import studioZhCN from "./studio/zh-CN";
+import studioZhTW from "./studio/zh-TW";
+import diagramsEn from "./diagrams/en";
+import diagramsZhCN from "./diagrams/zh-CN";
+import diagramsZhTW from "./diagrams/zh-TW";
+import studio3dEn from "./studio3d/en";
+import studio3dZhCN from "./studio3d/zh-CN";
+import studio3dZhTW from "./studio3d/zh-TW";
 
 export type Lang = "en" | "zh-CN" | "zh-TW";
 
@@ -37,6 +46,9 @@ export const dictionaries: Record<Lang, Record<string, string>> = {
     ...catalogEn,
     ...paramsEn,
     ...docsEn,
+    ...studioEn,
+    ...diagramsEn,
+    ...studio3dEn,
   },
   "zh-CN": {
     ...coreZhCN,
@@ -45,6 +57,9 @@ export const dictionaries: Record<Lang, Record<string, string>> = {
     ...catalogZhCN,
     ...paramsZhCN,
     ...docsZhCN,
+    ...studioZhCN,
+    ...diagramsZhCN,
+    ...studio3dZhCN,
   },
   "zh-TW": {
     ...coreZhTW,
@@ -53,5 +68,8 @@ export const dictionaries: Record<Lang, Record<string, string>> = {
     ...catalogZhTW,
     ...paramsZhTW,
     ...docsZhTW,
+    ...studioZhTW,
+    ...diagramsZhTW,
+    ...studio3dZhTW,
   },
 };

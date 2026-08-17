@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, eq, ne } from "drizzle-orm";
+import { and, desc, eq, ne } from "drizzle-orm";
 import { createRouter, publicQuery } from "../middleware";
 import { getDb } from "../queries/connection";
 import {
@@ -8,6 +8,7 @@ import {
   equipment,
   itConfigurations,
   itNodeTypes,
+  layouts,
   paramAudits,
   parameters,
   vendors,
@@ -486,6 +487,68 @@ export const designRouter = createRouter({
 // ---------------- 統計 ----------------
 export const statsRouter = createRouter({
   get: publicQuery.query(() => getStats()),
+});
+
+// ---------------- 配置圖版面 ----------------
+export const layoutRouter = createRouter({
+  list: publicQuery.query(async () => {
+    const rows = await getDb().select().from(layouts).orderBy(desc(layouts.updatedAt)).limit(100);
+    return rows.map((l) => ({
+      id: l.id,
+      name: l.name,
+      designId: l.designId,
+      configName: l.configName,
+      criterion: l.criterion,
+      updatedAt: l.updatedAt,
+    }));
+  }),
+
+  get: publicQuery.input(z.object({ id: z.number() })).query(async ({ input }) => {
+    const rows = await getDb().select().from(layouts).where(eq(layouts.id, input.id));
+    if (!rows.length) throw new Error("版面不存在");
+    return rows[0];
+  }),
+
+  save: publicQuery
+    .input(
+      z.object({
+        id: z.number().optional(),
+        name: z.string().min(1).max(255),
+        designId: z.number().optional().nullable(),
+        configName: z.string().max(255).optional().nullable(),
+        criterion: z.string().max(16).optional().nullable(),
+        layout: z.string().min(2),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const db = getDb();
+      if (input.id) {
+        await db
+          .update(layouts)
+          .set({
+            name: input.name,
+            designId: input.designId ?? null,
+            configName: input.configName ?? null,
+            criterion: input.criterion ?? null,
+            layout: input.layout,
+          })
+          .where(eq(layouts.id, input.id));
+        return { id: input.id };
+      }
+      const r = await db.insert(layouts).values({
+        name: input.name,
+        designId: input.designId ?? null,
+        configName: input.configName ?? null,
+        criterion: input.criterion ?? null,
+        layout: input.layout,
+      });
+      return { id: Number(r[0].insertId) };
+    }),
+
+  delete: publicQuery.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    await getDb().delete(layouts).where(eq(layouts.id, input.id));
+    return { ok: true };
+  }),
 });
 
 // 防止未使用告警（保留 drizzle 運算子匯出）

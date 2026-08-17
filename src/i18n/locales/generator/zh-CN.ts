@@ -220,4 +220,5 @@ export default {
   "generator.compare.grayOutdoorShort": "Gray 室外",
   "generator.compare.powerChartTitle": "峰值功率组成（MW）",
   "generator.compare.spaceChartTitle": "空间组成（m²）",
+  "generator.saved.layoutTitle": "在布局图工作室打开",
 } satisfies Record<string, string>;

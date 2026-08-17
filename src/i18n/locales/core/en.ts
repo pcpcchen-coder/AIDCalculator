@@ -5,6 +5,7 @@ export default {
   "nav.parameters": "Parameters",
   "nav.algorithms": "Algorithms",
   "nav.docs": "Model Docs",
+  "nav.layout": "Layout Studio",
   "nav.subtitle": "Datacenter Configuration Platform",
   "nav.paper": "Paper arXiv:2604.09616",
   "nav.menu.open": "Open navigation menu",

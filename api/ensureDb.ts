@@ -115,6 +115,16 @@ const DDL: string[] = [
     parameter_snapshot TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
   )`,
+  `CREATE TABLE IF NOT EXISTS layouts (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    design_id BIGINT UNSIGNED NULL,
+    config_name VARCHAR(255),
+    criterion VARCHAR(16),
+    layout TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  )`,
 ];
 
 const VENDOR_META: Record<string, { country?: string; website?: string; featured?: boolean }> = {

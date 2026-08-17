@@ -121,3 +121,15 @@ export const designs = mysqlTable("designs", {
   parameterSnapshot: text("parameter_snapshot"), // JSON
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+/** 配置圖工作室：使用者自訂版面（拖放/尺寸覆寫） */
+export const layouts = mysqlTable("layouts", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  designId: bigint("design_id", { mode: "number", unsigned: true }),
+  configName: varchar("config_name", { length: 255 }),
+  criterion: varchar("criterion", { length: 16 }),
+  layout: text("layout").notNull(), // LayoutDoc JSON
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+});

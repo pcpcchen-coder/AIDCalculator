@@ -11,6 +11,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  Map,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/i18n';
@@ -19,6 +20,7 @@ import { Languages } from 'lucide-react';
 const NAV_ITEMS = [
   { to: '/', key: 'nav.dashboard', icon: LayoutDashboard, end: true },
   { to: '/generator', key: 'nav.generator', icon: Cpu },
+  { to: '/layout', key: 'nav.layout', icon: Map },
   { to: '/catalog', key: 'nav.catalog', icon: Database },
   { to: '/parameters', key: 'nav.parameters', icon: SlidersHorizontal },
   { to: '/algorithms', key: 'nav.algorithms', icon: FunctionSquare },

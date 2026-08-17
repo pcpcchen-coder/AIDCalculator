@@ -5,6 +5,7 @@ import {
   designRouter,
   generateRouter,
   itConfigRouter,
+  layoutRouter,
   parameterRouter,
   statsRouter,
 } from "./routers/dcgen";
@@ -17,6 +18,7 @@ export const appRouter = createRouter({
   algorithms: algorithmRouter,
   generate: generateRouter,
   designs: designRouter,
+  layouts: layoutRouter,
   stats: statsRouter,
 });
 

@@ -5,6 +5,7 @@ export default {
   "nav.parameters": "参数管理",
   "nav.algorithms": "算法管理",
   "nav.docs": "模型说明",
+  "nav.layout": "布局图工作室",
   "nav.subtitle": "数据中心配置生成平台",
   "nav.paper": "论文 arXiv:2604.09616",
   "nav.menu.open": "打开导航菜单",

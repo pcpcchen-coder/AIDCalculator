@@ -23,6 +23,8 @@ import {
 import CompareDrawer from '@/components/generator/CompareDrawer';
 import type { ComparedDesign } from '@/components/generator/CompareDrawer';
 import { TYPE_BADGE_CLASS, fmt, fmtDateTime, typeLabelKey } from '@/components/generator/generator-utils';
+import { Link } from 'react-router';
+import { Map } from 'lucide-react';
 
 interface SavedDesignsProps {
   onLoad: (design: { name: string; input: GenerateInput; result: GenerateResult }) => void;
@@ -266,6 +268,13 @@ export default function SavedDesigns({ onLoad }: SavedDesignsProps) {
                           >
                             <Copy className="h-4 w-4" />
                           </button>
+                          <Link
+                            to={`/layout?design=${d.id}`}
+                            title={t('generator.saved.layoutTitle')}
+                            className="rounded-md p-1.5 text-text-2 transition-colors hover:bg-bg-1 hover:text-green"
+                          >
+                            <Map className="h-4 w-4" />
+                          </Link>
                           <button
                             type="button"
                             title={t('generator.saved.deleteTitle')}

@@ -221,4 +221,5 @@ export default {
   "generator.compare.grayOutdoorShort": "Gray outdoor",
   "generator.compare.powerChartTitle": "Peak power composition (MW)",
   "generator.compare.spaceChartTitle": "Space composition (m²)",
+  "generator.saved.layoutTitle": "Open in Layout Studio",
 } satisfies Record<string, string>;

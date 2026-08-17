@@ -5,6 +5,7 @@ export default {
   "nav.parameters": "參數管理",
   "nav.algorithms": "算法管理",
   "nav.docs": "模型說明",
+  "nav.layout": "配置圖工作室",
   "nav.subtitle": "資料中心配置產生平台",
   "nav.paper": "論文 arXiv:2604.09616",
   "nav.menu.open": "開啟導航選單",
