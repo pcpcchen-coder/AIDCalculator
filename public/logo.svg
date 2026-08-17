@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <!-- 極簡線條 Logo：三層機架 + 向上電力閃電 -->
+  <g stroke="#22D3EE" stroke-width="5" stroke-linecap="round">
+    <!-- 機架三層 -->
+    <rect x="28" y="46" width="96" height="26" rx="8" fill="none"/>
+    <rect x="28" y="87" width="96" height="26" rx="8" fill="none"/>
+    <rect x="28" y="128" width="96" height="26" rx="8" fill="none"/>
+    <!-- 狀態燈 -->
+    <circle cx="44" cy="59" r="3.5" fill="#22D3EE" stroke="none"/>
+    <circle cx="44" cy="100" r="3.5" fill="#34D399" stroke="none"/>
+    <circle cx="44" cy="141" r="3.5" fill="#F59E0B" stroke="none"/>
+    <!-- 機架內短線 -->
+    <line x1="58" y1="59" x2="108" y2="59" stroke-opacity="0.55"/>
+    <line x1="58" y1="100" x2="108" y2="100" stroke-opacity="0.55"/>
+    <line x1="58" y1="141" x2="108" y2="141" stroke-opacity="0.55"/>
+  </g>
+  <!-- 電力閃電 / 能量線 -->
+  <path d="M146 150 L166 108 L154 108 L172 62 L142 116 L154 116 L136 150 Z"
+        fill="#22D3EE" fill-opacity="0.9"/>
+  <path d="M172 62 C182 48 186 40 188 30" stroke="#22D3EE" stroke-width="4" stroke-linecap="round" stroke-opacity="0.7" fill="none"/>
+</svg>

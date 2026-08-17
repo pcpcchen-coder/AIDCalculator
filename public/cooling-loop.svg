@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600" fill="none" font-family="monospace">
+  <!-- 冷卻迴路示意：IT 機架 → CDU → 乾冷卻器/冷卻水塔 → 冰水機 循環 -->
+  <defs>
+    <marker id="cl-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#38BDF8"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="600" fill="#0B1220"/>
+  <!-- 藍圖網格 -->
+  <g stroke="#1E2D4A" stroke-width="1">
+    <path d="M0 60 H1200 M0 120 H1200 M0 180 H1200 M0 240 H1200 M0 300 H1200 M0 360 H1200 M0 420 H1200 M0 480 H1200 M0 540 H1200"/>
+    <path d="M60 0 V600 M120 0 V600 M180 0 V600 M240 0 V600 M300 0 V600 M360 0 V600 M420 0 V600 M480 0 V600 M540 0 V600 M600 0 V600 M660 0 V600 M720 0 V600 M780 0 V600 M840 0 V600 M900 0 V600 M960 0 V600 M1020 0 V600 M1080 0 V600 M1140 0 V600"/>
+  </g>
+  <!-- 節點 1：IT 機架 -->
+  <g stroke="#22D3EE" stroke-width="2">
+    <rect x="120" y="220" width="160" height="160" rx="10" fill="#101A2E"/>
+    <rect x="140" y="240" width="120" height="18" rx="4"/>
+    <rect x="140" y="268" width="120" height="18" rx="4"/>
+    <rect x="140" y="296" width="120" height="18" rx="4"/>
+    <rect x="140" y="324" width="120" height="18" rx="4"/>
+    <rect x="140" y="352" width="120" height="14" rx="4"/>
+    <circle cx="152" cy="249" r="3" fill="#22D3EE" stroke="none"/>
+    <circle cx="152" cy="277" r="3" fill="#34D399" stroke="none"/>
+    <circle cx="152" cy="305" r="3" fill="#F59E0B" stroke="none"/>
+  </g>
+  <text x="200" y="205" fill="#F1F5F9" font-size="18" text-anchor="middle">IT 機架</text>
+  <text x="200" y="410" fill="#64748B" font-size="13" text-anchor="middle">Server Racks</text>
+
+  <!-- 節點 2：CDU -->
+  <g stroke="#38BDF8" stroke-width="2">
+    <rect x="420" y="230" width="150" height="140" rx="10" fill="#101A2E"/>
+    <circle cx="460" cy="280" r="18"/>
+    <path d="M460 262 V298 M442 280 H478" stroke-opacity="0.6"/>
+    <circle cx="530" cy="280" r="18"/>
+    <path d="M530 262 V298 M512 280 H548" stroke-opacity="0.6"/>
+    <rect x="445" y="322" width="100" height="24" rx="4"/>
+  </g>
+  <text x="495" y="205" fill="#F1F5F9" font-size="18" text-anchor="middle">CDU 冷卻分配單元</text>
+  <text x="495" y="410" fill="#64748B" font-size="13" text-anchor="middle">Coolant Distribution Unit</text>
+
+  <!-- 節點 3：乾冷卻器 / 冷卻水塔 -->
+  <g stroke="#38BDF8" stroke-width="2">
+    <rect x="710" y="230" width="170" height="140" rx="10" fill="#101A2E"/>
+    <circle cx="795" cy="285" r="34"/>
+    <path d="M795 251 L795 319 M761 285 L829 285 M771 261 L819 309 M819 261 L771 309" stroke-opacity="0.6"/>
+    <path d="M735 340 H855" stroke-dasharray="5 6"/>
+  </g>
+  <text x="795" y="205" fill="#F1F5F9" font-size="18" text-anchor="middle">乾冷卻器 / 冷卻水塔</text>
+  <text x="795" y="410" fill="#64748B" font-size="13" text-anchor="middle">Dry Cooler / Evaporative Tower</text>
+
+  <!-- 節點 4：冰水機 -->
+  <g stroke="#A78BFA" stroke-width="2">
+    <rect x="990" y="230" width="150" height="140" rx="10" fill="#101A2E"/>
+    <path d="M1010 255 C1030 235 1045 275 1065 255 C1085 235 1100 275 1120 255"/>
+    <path d="M1010 285 C1030 265 1045 305 1065 285 C1085 265 1100 305 1120 285"/>
+    <path d="M1010 315 C1030 295 1045 335 1065 315 C1085 295 1100 335 1120 315"/>
+    <path d="M1010 345 C1030 325 1045 365 1065 345 C1085 325 1100 365 1120 345"/>
+  </g>
+  <text x="1065" y="205" fill="#F1F5F9" font-size="18" text-anchor="middle">冰水機</text>
+  <text x="1065" y="410" fill="#64748B" font-size="13" text-anchor="middle">Chiller</text>
+
+  <!-- 迴路箭頭（熱水去程 / 冷水回程） -->
+  <g stroke="#38BDF8" stroke-width="2" fill="none">
+    <path d="M280 262 H412" marker-end="url(#cl-arrow)"/>
+    <path d="M570 262 H702" marker-end="url(#cl-arrow)"/>
+    <path d="M880 262 H982" marker-end="url(#cl-arrow)"/>
+    <path d="M1065 370 V470 H200 V388" marker-end="url(#cl-arrow)" stroke="#22D3EE" stroke-dasharray="8 7"/>
+  </g>
+  <text x="345" y="250" fill="#38BDF8" font-size="12" text-anchor="middle">熱液</text>
+  <text x="640" y="250" fill="#38BDF8" font-size="12" text-anchor="middle">熱液</text>
+  <text x="930" y="250" fill="#38BDF8" font-size="12" text-anchor="middle">熱液</text>
+  <text x="632" y="492" fill="#22D3EE" font-size="12" text-anchor="middle">冷液回程 Chilled Return</text>
+</svg>

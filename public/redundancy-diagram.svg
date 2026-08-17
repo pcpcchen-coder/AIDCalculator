@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" fill="none" font-family="monospace">
+  <!-- 冗餘語彙圖解：N / N+1 / N+2 / 2N / xN-y -->
+  <rect width="1200" height="400" fill="#0B1220"/>
+  <g stroke="#1E2D4A" stroke-width="1">
+    <path d="M0 50 H1200 M0 100 H1200 M0 150 H1200 M0 200 H1200 M0 250 H1200 M0 300 H1200 M0 350 H1200"/>
+    <path d="M50 0 V400 M100 0 V400 M150 0 V400 M200 0 V400 M250 0 V400 M300 0 V400 M350 0 V400 M400 0 V400 M450 0 V400 M500 0 V400 M550 0 V400 M600 0 V400 M650 0 V400 M700 0 V400 M750 0 V400 M800 0 V400 M850 0 V400 M900 0 V400 M950 0 V400 M1000 0 V400 M1050 0 V400 M1100 0 V400 M1150 0 V400"/>
+  </g>
+
+  <!-- N -->
+  <g>
+    <text x="120" y="80" fill="#22D3EE" font-size="24" font-weight="bold" text-anchor="middle">N</text>
+    <g stroke="#22D3EE" stroke-width="2" fill="#101A2E">
+      <rect x="70" y="120" width="46" height="46" rx="8"/>
+      <rect x="124" y="120" width="46" height="46" rx="8"/>
+      <rect x="70" y="174" width="46" height="46" rx="8"/>
+      <rect x="124" y="174" width="46" height="46" rx="8"/>
+    </g>
+    <text x="120" y="262" fill="#94A3B8" font-size="12" text-anchor="middle">剛好滿足需求</text>
+    <text x="120" y="284" fill="#64748B" font-size="11" text-anchor="middle">4 台全為必需機組</text>
+  </g>
+
+  <!-- N+1 -->
+  <g>
+    <text x="360" y="80" fill="#22D3EE" font-size="24" font-weight="bold" text-anchor="middle">N+1</text>
+    <g stroke="#22D3EE" stroke-width="2" fill="#101A2E">
+      <rect x="310" y="120" width="46" height="46" rx="8"/>
+      <rect x="364" y="120" width="46" height="46" rx="8"/>
+      <rect x="310" y="174" width="46" height="46" rx="8"/>
+      <rect x="364" y="174" width="46" height="46" rx="8"/>
+    </g>
+    <rect x="418" y="147" width="46" height="46" rx="8" stroke="#34D399" stroke-width="2" stroke-dasharray="6 5" fill="none"/>
+    <text x="360" y="262" fill="#94A3B8" font-size="12" text-anchor="middle">多 1 台備援</text>
+    <text x="360" y="284" fill="#64748B" font-size="11" text-anchor="middle">任 1 台故障仍維持運轉</text>
+  </g>
+
+  <!-- N+2 -->
+  <g>
+    <text x="600" y="80" fill="#22D3EE" font-size="24" font-weight="bold" text-anchor="middle">N+2</text>
+    <g stroke="#22D3EE" stroke-width="2" fill="#101A2E">
+      <rect x="550" y="120" width="46" height="46" rx="8"/>
+      <rect x="604" y="120" width="46" height="46" rx="8"/>
+      <rect x="550" y="174" width="46" height="46" rx="8"/>
+      <rect x="604" y="174" width="46" height="46" rx="8"/>
+    </g>
+    <g stroke="#34D399" stroke-width="2" stroke-dasharray="6 5" fill="none">
+      <rect x="658" y="120" width="46" height="46" rx="8"/>
+      <rect x="658" y="174" width="46" height="46" rx="8"/>
+    </g>
+    <text x="600" y="262" fill="#94A3B8" font-size="12" text-anchor="middle">多 2 台備援</text>
+    <text x="600" y="284" fill="#64748B" font-size="11" text-anchor="middle">維修中仍可承受 1 台故障</text>
+  </g>
+
+  <!-- 2N -->
+  <g>
+    <text x="840" y="80" fill="#22D3EE" font-size="24" font-weight="bold" text-anchor="middle">2N</text>
+    <g stroke="#22D3EE" stroke-width="2" fill="#101A2E">
+      <rect x="776" y="120" width="46" height="46" rx="8"/>
+      <rect x="830" y="120" width="46" height="46" rx="8"/>
+      <rect x="776" y="174" width="46" height="46" rx="8"/>
+      <rect x="830" y="174" width="46" height="46" rx="8"/>
+    </g>
+    <g stroke="#34D399" stroke-width="2" stroke-dasharray="6 5" fill="none">
+      <rect x="884" y="120" width="46" height="46" rx="8"/>
+      <rect x="938" y="120" width="46" height="46" rx="8"/>
+      <rect x="884" y="174" width="46" height="46" rx="8"/>
+      <rect x="938" y="174" width="46" height="46" rx="8"/>
+    </g>
+    <text x="880" y="262" fill="#94A3B8" font-size="12" text-anchor="middle">完整雙套系統</text>
+    <text x="880" y="284" fill="#64748B" font-size="11" text-anchor="middle">A/B 兩路各自獨立供電/冷卻</text>
+  </g>
+
+  <!-- xN-y -->
+  <g>
+    <text x="1080" y="80" fill="#22D3EE" font-size="24" font-weight="bold" text-anchor="middle">xN-y</text>
+    <g stroke="#22D3EE" stroke-width="2" fill="#101A2E">
+      <rect x="1026" y="120" width="46" height="46" rx="8"/>
+      <rect x="1080" y="120" width="46" height="46" rx="8"/>
+      <rect x="1026" y="174" width="46" height="46" rx="8"/>
+      <rect x="1080" y="174" width="46" height="46" rx="8"/>
+    </g>
+    <g stroke="#F59E0B" stroke-width="2" stroke-dasharray="6 5" fill="none">
+      <rect x="1134" y="147" width="46" height="46" rx="8"/>
+    </g>
+    <text x="1080" y="262" fill="#94A3B8" font-size="12" text-anchor="middle">x 套系統、y 台失效</text>
+    <text x="1080" y="284" fill="#64748B" font-size="11" text-anchor="middle">自定義冗餘組合</text>
+  </g>
+
+  <!-- 圖例 -->
+  <g font-size="12">
+    <rect x="380" y="330" width="26" height="16" rx="4" stroke="#22D3EE" stroke-width="2" fill="#101A2E"/>
+    <text x="414" y="343" fill="#94A3B8">啟用機組 Active</text>
+    <rect x="560" y="330" width="26" height="16" rx="4" stroke="#34D399" stroke-width="2" stroke-dasharray="5 4" fill="none"/>
+    <text x="594" y="343" fill="#94A3B8">備援機組 Standby</text>
+    <rect x="740" y="330" width="26" height="16" rx="4" stroke="#F59E0B" stroke-width="2" stroke-dasharray="5 4" fill="none"/>
+    <text x="774" y="343" fill="#94A3B8">失效/維修機組 Failed</text>
+  </g>
+</svg>

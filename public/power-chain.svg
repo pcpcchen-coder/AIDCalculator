@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600" fill="none" font-family="monospace">
+  <!-- 配電鏈示意：市電 → MSB → 發電機 → UPS → PDU → 機架 -->
+  <defs>
+    <marker id="pc-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#A78BFA"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="600" fill="#0B1220"/>
+  <g stroke="#1E2D4A" stroke-width="1">
+    <path d="M0 60 H1200 M0 120 H1200 M0 180 H1200 M0 240 H1200 M0 300 H1200 M0 360 H1200 M0 420 H1200 M0 480 H1200 M0 540 H1200"/>
+    <path d="M60 0 V600 M120 0 V600 M180 0 V600 M240 0 V600 M300 0 V600 M360 0 V600 M420 0 V600 M480 0 V600 M540 0 V600 M600 0 V600 M660 0 V600 M720 0 V600 M780 0 V600 M840 0 V600 M900 0 V600 M960 0 V600 M1020 0 V600 M1080 0 V600 M1140 0 V600"/>
+  </g>
+
+  <!-- 1 市電 -->
+  <g stroke="#F59E0B" stroke-width="2">
+    <rect x="70" y="240" width="120" height="120" rx="10" fill="#101A2E"/>
+    <path d="M136 258 L120 296 H136 L118 342" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="130" y="218" fill="#F1F5F9" font-size="17" text-anchor="middle">市電</text>
+  <text x="130" y="392" fill="#64748B" font-size="12" text-anchor="middle">Utility Grid</text>
+
+  <!-- 2 MSB -->
+  <g stroke="#A78BFA" stroke-width="2">
+    <rect x="270" y="240" width="120" height="120" rx="10" fill="#101A2E"/>
+    <rect x="290" y="258" width="80" height="16" rx="3"/>
+    <rect x="290" y="284" width="80" height="16" rx="3"/>
+    <rect x="290" y="310" width="80" height="16" rx="3"/>
+    <path d="M300 336 H360" stroke-dasharray="4 5"/>
+  </g>
+  <text x="330" y="218" fill="#F1F5F9" font-size="17" text-anchor="middle">MSB 主開關盤</text>
+  <text x="330" y="392" fill="#64748B" font-size="12" text-anchor="middle">Main Switchboard</text>
+
+  <!-- 3 發電機 -->
+  <g stroke="#F59E0B" stroke-width="2">
+    <rect x="470" y="240" width="120" height="120" rx="10" fill="#101A2E"/>
+    <circle cx="530" cy="292" r="26"/>
+    <path d="M530 278 C542 284 542 300 530 306 C518 300 518 284 530 278 Z" stroke-opacity="0.7"/>
+  </g>
+  <text x="530" y="218" fill="#F1F5F9" font-size="17" text-anchor="middle">備援發電機</text>
+  <text x="530" y="392" fill="#64748B" font-size="12" text-anchor="middle">Backup Generator</text>
+
+  <!-- 4 UPS -->
+  <g stroke="#34D399" stroke-width="2">
+    <rect x="670" y="240" width="120" height="120" rx="10" fill="#101A2E"/>
+    <rect x="692" y="262" width="76" height="56" rx="6"/>
+    <path d="M700 290 H720 M730 276 V304 M740 290 H760" stroke-opacity="0.8"/>
+    <path d="M700 332 H760" stroke-dasharray="4 5"/>
+  </g>
+  <text x="730" y="218" fill="#F1F5F9" font-size="17" text-anchor="middle">UPS 不斷電系統</text>
+  <text x="730" y="392" fill="#64748B" font-size="12" text-anchor="middle">Uninterruptible Power Supply</text>
+
+  <!-- 5 PDU -->
+  <g stroke="#A78BFA" stroke-width="2">
+    <rect x="870" y="240" width="120" height="120" rx="10" fill="#101A2E"/>
+    <path d="M890 300 V262 M910 300 V262 M930 300 V262 M950 300 V262 M970 300 V262"/>
+    <path d="M890 300 H970" />
+    <path d="M890 322 H970" stroke-dasharray="4 5"/>
+    <path d="M890 340 H970" stroke-dasharray="4 5"/>
+  </g>
+  <text x="930" y="218" fill="#F1F5F9" font-size="17" text-anchor="middle">PDU 配電單元</text>
+  <text x="930" y="392" fill="#64748B" font-size="12" text-anchor="middle">Power Distribution Unit</text>
+
+  <!-- 6 機架 -->
+  <g stroke="#22D3EE" stroke-width="2">
+    <rect x="1060" y="230" width="110" height="140" rx="10" fill="#101A2E"/>
+    <rect x="1076" y="246" width="78" height="16" rx="4"/>
+    <rect x="1076" y="272" width="78" height="16" rx="4"/>
+    <rect x="1076" y="298" width="78" height="16" rx="4"/>
+    <rect x="1076" y="324" width="78" height="16" rx="4"/>
+    <circle cx="1086" cy="254" r="3" fill="#22D3EE" stroke="none"/>
+    <circle cx="1086" cy="280" r="3" fill="#34D399" stroke="none"/>
+  </g>
+  <text x="1115" y="218" fill="#F1F5F9" font-size="17" text-anchor="middle">IT 機架</text>
+  <text x="1115" y="392" fill="#64748B" font-size="12" text-anchor="middle">Server Racks</text>
+
+  <!-- 連接線 -->
+  <g stroke="#A78BFA" stroke-width="2" fill="none">
+    <path d="M190 300 H262" marker-end="url(#pc-arrow)"/>
+    <path d="M390 300 H462" marker-end="url(#pc-arrow)"/>
+    <path d="M590 300 H662" marker-end="url(#pc-arrow)"/>
+    <path d="M790 300 H862" marker-end="url(#pc-arrow)"/>
+    <path d="M990 300 H1052" marker-end="url(#pc-arrow)"/>
+  </g>
+  <!-- 發電機備援虛線：併入市電→MSB -->
+  <path d="M530 240 V150 H330 V232" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="7 7" fill="none" marker-end="url(#pc-arrow)"/>
+  <text x="430" y="138" fill="#F59E0B" font-size="12" text-anchor="middle">備援迴路 Standby Feed</text>
+  <!-- 能量流標註 -->
+  <text x="600" y="520" fill="#64748B" font-size="13" text-anchor="middle">Power Chain：Utility → MSB → Generator → UPS → PDU → Rack</text>
+</svg>
