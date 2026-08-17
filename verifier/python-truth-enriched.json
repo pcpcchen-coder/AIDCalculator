@@ -1,0 +1,560 @@
+{
+ "A4": {
+  "Configuration (2024 Canonical Configuration)": {
+   "IT configuration": {
+    "Peak power (MW)": {
+     "GPU": 140.304,
+     "Storage": 3.326
+    },
+    "Rack count": {
+     "GPU": 888,
+     "Storage": 112
+    },
+    "Power density (kW/m\u00b2)": 79.795,
+    "Space Utilization (m\u00b2)": 1800.0,
+    "Hardware Generation": "2024"
+   },
+   "Cooling system": {
+    "Dry coolers": {
+     "Power Optimized Design": {
+      "IT": {
+       "Name": "Vertiv Liebert *D**112",
+       "Total hardware count": 4983,
+       "Total Capacity (MW)": 172.412,
+       "Space Utilization (m\u00b2)": 13984.5,
+       "Space Efficiency (kW/m\u00b2)": 10.27,
+       "Maximum power demand (MW)": 2.79,
+       "Power Efficiency": 51.47
+      }
+     },
+     "Space Optimized Design": {
+      "IT": {
+       "Name": "Vertiv Liebert *D**940",
+       "Total hardware count": 628,
+       "Total Capacity (MW)": 172.7,
+       "Space Utilization (m\u00b2)": 3168.3,
+       "Space Efficiency (kW/m\u00b2)": 45.33,
+       "Maximum power demand (MW)": 2.813,
+       "Power Efficiency": 51.05
+      }
+     }
+    },
+    "Chillers": {
+     "Power Optimized Design": {
+      "IT": {
+       "Name": "Vertiv OFC-WT4040B",
+       "Total hardware count": 385,
+       "Total Capacity (MW)": 173.25,
+       "Space Utilization (m\u00b2)": 1386.0,
+       "Space Efficiency (kW/m\u00b2)": 103.63,
+       "Maximum power demand (MW)": 21.945,
+       "Power Efficiency": 6.54
+      }
+     },
+     "Space Optimized Design": {
+      "IT": {
+       "Name": "Carrier AquaEdge 19DV",
+       "Total hardware count": 44,
+       "Total Capacity (MW)": 177.936,
+       "Space Utilization (m\u00b2)": 681.5,
+       "Space Efficiency (kW/m\u00b2)": 210.76,
+       "Power Efficiency": 0.99,
+       "Maximum Conversion Power (MW)": 1.797
+      }
+     }
+    },
+    "CDUs": {
+     "Power Optimized Design": {
+      "IT": {
+       "Name": "CoolIT CHx2000",
+       "Units per Pod": 3,
+       "Total hardware count": 150,
+       "Total Capacity (MW)": 300.0,
+       "Space Utilization (m\u00b2)": 162.0,
+       "Space Efficiency (kW/m\u00b2)": 886.6,
+       "Maximum power demand (MW)": 1.836,
+       "Power Efficiency": 78.23
+      }
+     },
+     "Space Optimized Design": {
+      "IT": {
+       "Name": "CoolIT CHx2000",
+       "Units per Pod": 3,
+       "Total hardware count": 150,
+       "Total Capacity (MW)": 300.0,
+       "Space Utilization (m\u00b2)": 162.0,
+       "Space Efficiency (kW/m\u00b2)": 886.6,
+       "Maximum power demand (MW)": 1.836,
+       "Power Efficiency": 78.23
+      }
+     }
+    },
+    "Summary": {
+     "Power Optimized Design": {
+      "Maximum power demand (MW)": 26.571,
+      "Space Utilization (m\u00b2)": {
+       "In datacenter Floor": 1548.0,
+       "Outside": 13984.5
+      }
+     },
+     "Space Optimized Design": {
+      "Maximum power demand (MW)": 4.649,
+      "Space Utilization (m\u00b2)": {
+       "In datacenter Floor": 843.5,
+       "Outside": 3168.3
+      }
+     }
+    }
+   },
+   "Power system": {
+    "PDUs": {
+     "Power Optimized Design": {
+      "IT": {
+       "Name": "Vertiv Liebert SPM",
+       "Units per Pod": 10,
+       "Total hardware count": 500,
+       "Total Capacity (MW)": 200.0,
+       "Space Utilization (m\u00b2)": 936.0,
+       "Space Efficiency (kW/m\u00b2)": 153.45,
+       "Power Efficiency": 0.9908,
+       "Maximum Conversion Power (MW)": 1.857
+      }
+     },
+     "Space Optimized Design": {
+      "IT": {
+       "Name": "Vertiv Liebert TFX",
+       "Units per Pod": 13,
+       "Total hardware count": 650,
+       "Total Capacity (MW)": 195.0,
+       "Space Utilization (m\u00b2)": 760.7,
+       "Space Efficiency (kW/m\u00b2)": 188.81,
+       "Power Efficiency": 0.9902,
+       "Maximum Conversion Power (MW)": 1.93
+      }
+     }
+    },
+    "UPSs": {
+     "Power Optimized Design": {
+      "IT": {
+       "Name": "Delta Modulon DPH-G3-1250K-MD",
+       "Total hardware count": 276,
+       "Total Capacity (MW)": 345.0,
+       "Space Utilization (m\u00b2)": 331.2,
+       "Space Efficiency (kW/m\u00b2)": 433.67,
+       "Power Efficiency": 0.975,
+       "Maximum Conversion Power (MW)": 4.423
+      },
+      "Facility": {
+       "Name": "Delta Modulon DPH-G3-1250K-MD",
+       "Total hardware count": 52,
+       "Total Capacity (MW)": 65.0,
+       "Space Utilization (m\u00b2)": 62.4,
+       "Space Efficiency (kW/m\u00b2)": 425.82,
+       "Power Efficiency": 0.975,
+       "Maximum Conversion Power (MW)": 0.833
+      }
+     },
+     "Space Optimized Design": {
+      "IT": {
+       "Name": "Delta Modulon DPH-G3-1250K-MD",
+       "Total hardware count": 276,
+       "Total Capacity (MW)": 345.0,
+       "Space Utilization (m\u00b2)": 331.2,
+       "Space Efficiency (kW/m\u00b2)": 433.67,
+       "Power Efficiency": 0.975,
+       "Maximum Conversion Power (MW)": 4.423
+      },
+      "Facility": {
+       "Name": "Delta Modulon DPH-G3-1250K-MD",
+       "Total hardware count": 10,
+       "Total Capacity (MW)": 12.5,
+       "Space Utilization (m\u00b2)": 12.0,
+       "Space Efficiency (kW/m\u00b2)": 387.42,
+       "Power Efficiency": 0.975,
+       "Maximum Conversion Power (MW)": 0.16
+      }
+     }
+    },
+    "MSBs": {
+     "Power Optimized Design": {
+      "IT": {
+       "Name": "Vertiv UL1066-2000A",
+       "Total hardware count": 30,
+       "Total Capacity (MW)": 360.0,
+       "Space Utilization (m\u00b2)": 50.9,
+       "Space Efficiency (kW/m\u00b2)": 2821.81,
+       "Power Efficiency": 0.99,
+       "Maximum Conversion Power (MW)": 1.818
+      },
+      "Facility": {
+       "Name": "Vertiv UL1066-2000A",
+       "Total hardware count": 6,
+       "Total Capacity (MW)": 72.0,
+       "Space Utilization (m\u00b2)": 10.2,
+       "Space Efficiency (kW/m\u00b2)": 2605.0,
+       "Power Efficiency": 0.99,
+       "Maximum Conversion Power (MW)": 0.364
+      }
+     },
+     "Space Optimized Design": {
+      "IT": {
+       "Name": "Vertiv UL1066-2000A",
+       "Total hardware count": 30,
+       "Total Capacity (MW)": 360.0,
+       "Space Utilization (m\u00b2)": 50.9,
+       "Space Efficiency (kW/m\u00b2)": 2821.81,
+       "Power Efficiency": 0.99,
+       "Maximum Conversion Power (MW)": 1.818
+      },
+      "Facility": {
+       "Name": "Vertiv UL1066-2000A",
+       "Total hardware count": 2,
+       "Total Capacity (MW)": 24.0,
+       "Space Utilization (m\u00b2)": 3.4,
+       "Space Efficiency (kW/m\u00b2)": 1367.35,
+       "Power Efficiency": 0.99,
+       "Maximum Conversion Power (MW)": 0.121
+      }
+     }
+    },
+    "Backup Generators": {
+     "Power Optimized Design": {
+      "IT": {
+       "Name": "MC Diesel-10MW",
+       "Total hardware count": 36,
+       "Total Capacity (MW)": 360.0,
+       "Space Utilization (m\u00b2)": 122.5,
+       "Space Efficiency (kW/m\u00b2)": 1172.49,
+       "Power Efficiency": 1,
+       "Maximum Conversion Power (MW)": 0.0
+      },
+      "Facility": {
+       "Name": "MC Diesel-10MW",
+       "Total hardware count": 8,
+       "Total Capacity (MW)": 80.0,
+       "Space Utilization (m\u00b2)": 27.2,
+       "Space Efficiency (kW/m\u00b2)": 976.88,
+       "Power Efficiency": 1,
+       "Maximum Conversion Power (MW)": 0.0
+      }
+     },
+     "Space Optimized Design": {
+      "IT": {
+       "Name": "MC Diesel-10MW",
+       "Total hardware count": 36,
+       "Total Capacity (MW)": 360.0,
+       "Space Utilization (m\u00b2)": 122.5,
+       "Space Efficiency (kW/m\u00b2)": 1172.49,
+       "Power Efficiency": 1,
+       "Maximum Conversion Power (MW)": 0.0
+      },
+      "Facility": {
+       "Name": "MC Diesel-10MW",
+       "Total hardware count": 2,
+       "Total Capacity (MW)": 20.0,
+       "Space Utilization (m\u00b2)": 6.8,
+       "Space Efficiency (kW/m\u00b2)": 683.68,
+       "Power Efficiency": 1,
+       "Maximum Conversion Power (MW)": 0.0
+      }
+     }
+    },
+    "Summary": {
+     "Power Optimized Design": {
+      "Maximum Conversion Power (MW)": 9.295,
+      "Space Utilization (m\u00b2)": {
+       "In datacenter Floor": 1390.7,
+       "Outside": 149.7
+      }
+     },
+     "Space Optimized Design": {
+      "Maximum Conversion Power (MW)": 8.452,
+      "Space Utilization (m\u00b2)": {
+       "In datacenter Floor": 1158.2,
+       "Outside": 129.3
+      }
+     }
+    }
+   }
+  }
+ },
+ "A4_evap": {
+  "Configuration (2024 Canonical Configuration)": {
+   "IT configuration": {
+    "Peak power (MW)": {
+     "GPU": 140.304,
+     "Storage": 3.326
+    },
+    "Rack count": {
+     "GPU": 888,
+     "Storage": 112
+    },
+    "Power density (kW/m\u00b2)": 79.795,
+    "Space Utilization (m\u00b2)": 1800.0,
+    "Hardware Generation": "2024"
+   },
+   "Cooling system": {
+    "Evaporative Cooling Towers": {
+     "Power Optimized Design": {
+      "IT": {
+       "Name": "Evapco AT 14-3F9",
+       "Total hardware count": 492,
+       "Total Capacity (MW)": 173.036,
+       "Space Utilization (m\u00b2)": 2655.6,
+       "Space Efficiency (kW/m\u00b2)": 54.09,
+       "Maximum power demand (MW)": 2.165,
+       "Power Efficiency": 66.35
+      }
+     },
+     "Space Optimized Design": {
+      "IT": {
+       "Name": "Evapco AT 39-4M42",
+       "Total hardware count": 41,
+       "Total Capacity (MW)": 178.653,
+       "Space Utilization (m\u00b2)": 1637.5,
+       "Space Efficiency (kW/m\u00b2)": 87.71,
+       "Maximum power demand (MW)": 2.755,
+       "Power Efficiency": 52.13
+      }
+     }
+    },
+    "Chillers": {
+     "Power Optimized Design": {
+      "IT": {
+       "Name": "Vertiv OFC-WT4040B",
+       "Total hardware count": 385,
+       "Total Capacity (MW)": 173.25,
+       "Space Utilization (m\u00b2)": 1386.0,
+       "Space Efficiency (kW/m\u00b2)": 103.63,
+       "Maximum power demand (MW)": 21.945,
+       "Power Efficiency": 6.54
+      }
+     },
+     "Space Optimized Design": {
+      "IT": {
+       "Name": "Carrier AquaEdge 19DV",
+       "Total hardware count": 44,
+       "Total Capacity (MW)": 177.936,
+       "Space Utilization (m\u00b2)": 681.5,
+       "Space Efficiency (kW/m\u00b2)": 210.76,
+       "Power Efficiency": 0.99,
+       "Maximum Conversion Power (MW)": 1.797
+      }
+     }
+    },
+    "CDUs": {
+     "Power Optimized Design": {
+      "IT": {
+       "Name": "CoolIT CHx2000",
+       "Units per Pod": 3,
+       "Total hardware count": 150,
+       "Total Capacity (MW)": 300.0,
+       "Space Utilization (m\u00b2)": 162.0,
+       "Space Efficiency (kW/m\u00b2)": 886.6,
+       "Maximum power demand (MW)": 1.836,
+       "Power Efficiency": 78.23
+      }
+     },
+     "Space Optimized Design": {
+      "IT": {
+       "Name": "CoolIT CHx2000",
+       "Units per Pod": 3,
+       "Total hardware count": 150,
+       "Total Capacity (MW)": 300.0,
+       "Space Utilization (m\u00b2)": 162.0,
+       "Space Efficiency (kW/m\u00b2)": 886.6,
+       "Maximum power demand (MW)": 1.836,
+       "Power Efficiency": 78.23
+      }
+     }
+    },
+    "Summary": {
+     "Power Optimized Design": {
+      "Maximum power demand (MW)": 25.946,
+      "Space Utilization (m\u00b2)": {
+       "In datacenter Floor": 1548.0,
+       "Outside": 2655.6
+      }
+     },
+     "Space Optimized Design": {
+      "Maximum power demand (MW)": 4.591,
+      "Space Utilization (m\u00b2)": {
+       "In datacenter Floor": 843.5,
+       "Outside": 1637.5
+      }
+     }
+    }
+   },
+   "Power system": {
+    "PDUs": {
+     "Power Optimized Design": {
+      "IT": {
+       "Name": "Vertiv Liebert SPM",
+       "Units per Pod": 10,
+       "Total hardware count": 500,
+       "Total Capacity (MW)": 200.0,
+       "Space Utilization (m\u00b2)": 936.0,
+       "Space Efficiency (kW/m\u00b2)": 153.45,
+       "Power Efficiency": 0.9908,
+       "Maximum Conversion Power (MW)": 1.857
+      }
+     },
+     "Space Optimized Design": {
+      "IT": {
+       "Name": "Vertiv Liebert TFX",
+       "Units per Pod": 13,
+       "Total hardware count": 650,
+       "Total Capacity (MW)": 195.0,
+       "Space Utilization (m\u00b2)": 760.7,
+       "Space Efficiency (kW/m\u00b2)": 188.81,
+       "Power Efficiency": 0.9902,
+       "Maximum Conversion Power (MW)": 1.93
+      }
+     }
+    },
+    "UPSs": {
+     "Power Optimized Design": {
+      "IT": {
+       "Name": "Delta Modulon DPH-G3-1250K-MD",
+       "Total hardware count": 276,
+       "Total Capacity (MW)": 345.0,
+       "Space Utilization (m\u00b2)": 331.2,
+       "Space Efficiency (kW/m\u00b2)": 433.67,
+       "Power Efficiency": 0.975,
+       "Maximum Conversion Power (MW)": 4.423
+      },
+      "Facility": {
+       "Name": "Delta Modulon DPH-G3-1250K-MD",
+       "Total hardware count": 50,
+       "Total Capacity (MW)": 62.5,
+       "Space Utilization (m\u00b2)": 60.0,
+       "Space Efficiency (kW/m\u00b2)": 432.43,
+       "Power Efficiency": 0.975,
+       "Maximum Conversion Power (MW)": 0.801
+      }
+     },
+     "Space Optimized Design": {
+      "IT": {
+       "Name": "Delta Modulon DPH-G3-1250K-MD",
+       "Total hardware count": 276,
+       "Total Capacity (MW)": 345.0,
+       "Space Utilization (m\u00b2)": 331.2,
+       "Space Efficiency (kW/m\u00b2)": 433.67,
+       "Power Efficiency": 0.975,
+       "Maximum Conversion Power (MW)": 4.423
+      },
+      "Facility": {
+       "Name": "Delta Modulon DPH-G3-1250K-MD",
+       "Total hardware count": 10,
+       "Total Capacity (MW)": 12.5,
+       "Space Utilization (m\u00b2)": 12.0,
+       "Space Efficiency (kW/m\u00b2)": 382.58,
+       "Power Efficiency": 0.975,
+       "Maximum Conversion Power (MW)": 0.16
+      }
+     }
+    },
+    "MSBs": {
+     "Power Optimized Design": {
+      "IT": {
+       "Name": "Vertiv UL1066-2000A",
+       "Total hardware count": 30,
+       "Total Capacity (MW)": 360.0,
+       "Space Utilization (m\u00b2)": 50.9,
+       "Space Efficiency (kW/m\u00b2)": 2821.81,
+       "Power Efficiency": 0.99,
+       "Maximum Conversion Power (MW)": 1.818
+      },
+      "Facility": {
+       "Name": "Vertiv UL1066-2000A",
+       "Total hardware count": 6,
+       "Total Capacity (MW)": 72.0,
+       "Space Utilization (m\u00b2)": 10.2,
+       "Space Efficiency (kW/m\u00b2)": 2543.73,
+       "Power Efficiency": 0.99,
+       "Maximum Conversion Power (MW)": 0.364
+      }
+     },
+     "Space Optimized Design": {
+      "IT": {
+       "Name": "Vertiv UL1066-2000A",
+       "Total hardware count": 30,
+       "Total Capacity (MW)": 360.0,
+       "Space Utilization (m\u00b2)": 50.9,
+       "Space Efficiency (kW/m\u00b2)": 2821.81,
+       "Power Efficiency": 0.99,
+       "Maximum Conversion Power (MW)": 1.818
+      },
+      "Facility": {
+       "Name": "Vertiv UL1066-2000A",
+       "Total hardware count": 2,
+       "Total Capacity (MW)": 24.0,
+       "Space Utilization (m\u00b2)": 3.4,
+       "Space Efficiency (kW/m\u00b2)": 1350.29,
+       "Power Efficiency": 0.99,
+       "Maximum Conversion Power (MW)": 0.121
+      }
+     }
+    },
+    "Backup Generators": {
+     "Power Optimized Design": {
+      "IT": {
+       "Name": "MC Diesel-10MW",
+       "Total hardware count": 36,
+       "Total Capacity (MW)": 360.0,
+       "Space Utilization (m\u00b2)": 122.5,
+       "Space Efficiency (kW/m\u00b2)": 1172.49,
+       "Power Efficiency": 1,
+       "Maximum Conversion Power (MW)": 0.0
+      },
+      "Facility": {
+       "Name": "MC Diesel-10MW",
+       "Total hardware count": 8,
+       "Total Capacity (MW)": 80.0,
+       "Space Utilization (m\u00b2)": 27.2,
+       "Space Efficiency (kW/m\u00b2)": 953.9,
+       "Power Efficiency": 1,
+       "Maximum Conversion Power (MW)": 0.0
+      }
+     },
+     "Space Optimized Design": {
+      "IT": {
+       "Name": "MC Diesel-10MW",
+       "Total hardware count": 36,
+       "Total Capacity (MW)": 360.0,
+       "Space Utilization (m\u00b2)": 122.5,
+       "Space Efficiency (kW/m\u00b2)": 1172.49,
+       "Power Efficiency": 1,
+       "Maximum Conversion Power (MW)": 0.0
+      },
+      "Facility": {
+       "Name": "MC Diesel-10MW",
+       "Total hardware count": 2,
+       "Total Capacity (MW)": 20.0,
+       "Space Utilization (m\u00b2)": 6.8,
+       "Space Efficiency (kW/m\u00b2)": 675.15,
+       "Power Efficiency": 1,
+       "Maximum Conversion Power (MW)": 0.0
+      }
+     }
+    },
+    "Summary": {
+     "Power Optimized Design": {
+      "Maximum Conversion Power (MW)": 9.263,
+      "Space Utilization (m\u00b2)": {
+       "In datacenter Floor": 1388.3,
+       "Outside": 149.7
+      }
+     },
+     "Space Optimized Design": {
+      "Maximum Conversion Power (MW)": 8.452,
+      "Space Utilization (m\u00b2)": {
+       "In datacenter Floor": 1158.2,
+       "Outside": 129.3
+      }
+     }
+    }
+   }
+  }
+ }
+}
