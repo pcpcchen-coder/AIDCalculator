@@ -13,17 +13,20 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/i18n';
+import { Languages } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { to: '/', label: '總覽', icon: LayoutDashboard, end: true },
-  { to: '/generator', label: '配置產生器', icon: Cpu },
-  { to: '/catalog', label: '資料庫管理', icon: Database },
-  { to: '/parameters', label: '參數管理', icon: SlidersHorizontal },
-  { to: '/algorithms', label: '算法管理', icon: FunctionSquare },
-  { to: '/docs', label: '模型說明', icon: BookOpen },
+  { to: '/', key: 'nav.dashboard', icon: LayoutDashboard, end: true },
+  { to: '/generator', key: 'nav.generator', icon: Cpu },
+  { to: '/catalog', key: 'nav.catalog', icon: Database },
+  { to: '/parameters', key: 'nav.parameters', icon: SlidersHorizontal },
+  { to: '/algorithms', key: 'nav.algorithms', icon: FunctionSquare },
+  { to: '/docs', key: 'nav.docs', icon: BookOpen },
 ] as const;
 
 function LogoBlock() {
+  const { t } = useI18n();
   return (
     <Link to="/" className="flex items-center gap-3 px-5 py-5">
       <img src="/logo.svg" alt="DCGen Web Logo" className="h-10 w-10" />
@@ -31,16 +34,42 @@ function LogoBlock() {
         <div className="font-display text-lg font-bold tracking-tight text-text-0">
           DCGen <span className="text-accent">Web</span>
         </div>
-        <div className="text-xs text-text-2">資料中心配置產生平台</div>
+        <div className="text-xs text-text-2">{t('nav.subtitle')}</div>
       </div>
     </Link>
   );
 }
 
+function LangSwitcher({ compact }: { compact?: boolean }) {
+  const { lang, setLang, langs, t } = useI18n();
+  return (
+    <div className={cn('flex items-center gap-1.5', compact ? '' : 'px-1')}>
+      <Languages className="h-3.5 w-3.5 shrink-0 text-text-2" aria-label={t('lang.label')} />
+      <div className="flex rounded-full border border-line bg-bg-1 p-0.5">
+        {langs.map((l) => (
+          <button
+            key={l.value}
+            type="button"
+            onClick={() => setLang(l.value)}
+            title={l.label}
+            className={cn(
+              'rounded-full px-2 py-0.5 text-xs transition-colors',
+              lang === l.value ? 'bg-bg-3 text-accent' : 'text-text-2 hover:text-text-1',
+            )}
+          >
+            {l.short}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function NavItems({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useI18n();
   return (
     <nav className="flex flex-col gap-1 px-3">
-      {NAV_ITEMS.map(({ to, label, icon: Icon, ...rest }) => (
+      {NAV_ITEMS.map(({ to, key, icon: Icon, ...rest }) => (
         <NavLink
           key={to}
           to={to}
@@ -67,7 +96,7 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
                   isActive ? 'text-accent' : 'text-text-2 group-hover:text-text-1',
                 )}
               />
-              <span>{label}</span>
+              <span>{t(key)}</span>
             </>
           )}
         </NavLink>
@@ -77,8 +106,10 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function SidebarFooter() {
+  const { t } = useI18n();
   return (
     <div className="mt-auto flex flex-col gap-3 border-t border-line px-5 py-4">
+      <LangSwitcher />
       <span className="inline-flex w-fit items-center rounded-full border border-line bg-bg-2 px-2.5 py-1 font-mono text-xs text-text-1">
         DCGen 1.1 · Web
       </span>
@@ -89,7 +120,7 @@ function SidebarFooter() {
           rel="noreferrer"
           className="flex items-center gap-1.5 transition-colors hover:text-accent"
         >
-          論文 arXiv:2604.09616
+          {t('nav.paper')}
           <ExternalLink className="h-3 w-3" />
         </a>
         <a
@@ -108,6 +139,7 @@ function SidebarFooter() {
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const { t } = useI18n();
 
   return (
     <>
@@ -131,7 +163,7 @@ export default function Navbar() {
         </Link>
         <button
           type="button"
-          aria-label="開啟導航選單"
+          aria-label={t('nav.menu.open')}
           onClick={() => setOpen(true)}
           className="rounded-lg border border-line bg-bg-2 p-2 text-text-1 transition-colors hover:text-accent"
         >
@@ -162,7 +194,7 @@ export default function Navbar() {
                 <LogoBlock />
                 <button
                   type="button"
-                  aria-label="關閉導航選單"
+                  aria-label={t('nav.menu.close')}
                   onClick={() => setOpen(false)}
                   className="rounded-lg border border-line bg-bg-2 p-2 text-text-1 transition-colors hover:text-accent"
                 >

@@ -21,12 +21,8 @@ export default function Footer() {
               DCGen <span className="text-accent">Web</span>
             </span>
           </div>
-          <p className="text-sm text-text-1">
-            基於 DCGen 1.1 模型的資料中心配置產生平台：輸入 IT 需求，即時產出機房空間、功率、冷卻與配電設備清單。
-          </p>
-          <p className="mt-3 font-mono text-xs text-text-2">
-            引用格式：DCGen 1.1, UChicago / Argonne, arXiv:2604.09616
-          </p>
+          <p className="text-sm text-text-1">{t('footer.tagline')}</p>
+          <p className="mt-3 font-mono text-xs text-text-2">{t('footer.citation')}</p>
         </motion.div>
 
         <motion.div
@@ -34,12 +30,9 @@ export default function Footer() {
           transition={{ duration: 0.5, ease: 'easeOut' }}
         >
           <h3 className="mb-3 text-xs font-medium uppercase tracking-[0.08em] text-text-2">
-            資料來源聲明
+            {t('footer.sources')}
           </h3>
-          <p className="text-sm text-text-1">
-            本平台設備規格取自各製造商公開型錄與官方網站（含台達電子、Vertiv、Schneider
-            Electric、Evapco、Carrier、Cummins 等），僅供學術研究與模型演示，數值以原廠最新公告為準。
-          </p>
+          <p className="text-sm text-text-1">{t('footer.sourcesBody')}</p>
         </motion.div>
 
         <motion.div
@@ -47,7 +40,7 @@ export default function Footer() {
           transition={{ duration: 0.5, ease: 'easeOut' }}
         >
           <h3 className="mb-3 text-xs font-medium uppercase tracking-[0.08em] text-text-2">
-            相關連結
+            {t('footer.links')}
           </h3>
           <ul className="flex flex-col gap-2 text-sm text-text-1">
             <li>
@@ -57,7 +50,7 @@ export default function Footer() {
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 transition-colors hover:text-accent"
               >
-                arXiv:2604.09616 論文
+                {t('footer.paper')}
                 <ExternalLink className="h-3.5 w-3.5" />
               </a>
             </li>
@@ -79,7 +72,7 @@ export default function Footer() {
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 transition-colors hover:text-accent"
               >
-                台達電子官方網站
+                {t('footer.delta')}
                 <ExternalLink className="h-3.5 w-3.5" />
               </a>
             </li>
@@ -87,7 +80,7 @@ export default function Footer() {
         </motion.div>
       </motion.div>
       <div className="border-t border-line py-4 text-center font-mono text-xs text-text-2">
-        © 2026 DCGen Web · 基於 DCGen 1.1 (UChicago / Argonne)
+        {t('footer.copyright')}
       </div>
     </footer>
   );
