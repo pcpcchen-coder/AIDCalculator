@@ -115,6 +115,12 @@ function SidebarFooter() {
       <span className="inline-flex w-fit items-center rounded-full border border-line bg-bg-2 px-2.5 py-1 font-mono text-xs text-text-1">
         DCGen 1.1 · Web
       </span>
+      <span
+        className="font-mono text-[10px] text-text-2/70"
+        title={RELEASE_NOTE}
+      >
+        {RELEASE_LABEL} · {RELEASE_DATE}
+      </span>
       <div className="flex flex-col gap-1.5 text-xs text-text-2">
         <a
           href="https://arxiv.org/abs/2604.09616"
