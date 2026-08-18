@@ -4,7 +4,7 @@
  * - 若 equipment 為空則執行完整 seed
  * 以 shared promise 保證只執行一次；失敗時重設，下次請求重試。
  */
-import { sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { getDb } from "./queries/connection";
 import {
   algorithms,
@@ -139,11 +139,83 @@ const VENDOR_META: Record<string, { country?: string; website?: string; featured
   Evapco: { country: "美國", website: "https://www.evapco.com" },
 };
 
+/** 審計修正（2026-08-17）：僅在資料列仍為舊種子值時套用（不覆寫使用者已修改的列） */
+const SEED_PATCHES: { name: string; matchCapacity: number; set: Record<string, number | string | null> }[] = [
+  {
+    name: "Vertiv CoolChip 100",
+    matchCapacity: 1000,
+    set: {
+      capacityKw: 100,
+      peakPowerConsumptionKw: 0.7,
+      heightM: 0.175,
+      widthM: 0.445,
+      depthM: 0.83,
+      sourceUrl:
+        "https://www.vertiv.com/492989/globalassets/products/thermal-management/high-density-solutions/vertiv-coolchip-cdu/vertiv-coolchip-cdu-100kw-data-sheet-sl-71348.pdf",
+    },
+  },
+  { name: "Caterpillar Diesel-C1.1", matchCapacity: 8.8, set: { heightM: 0.996 } },
+  { name: "Huawei UPS5000-H 1200kVA", matchCapacity: 1080, set: { capacityKw: 1200 } },
+  { name: "Vertiv UL1066-2000A", matchCapacity: 12000, set: { capacityKw: 1660 } },
+];
+
+/** 增量種子：補入新型號（依名稱）、套用審計修正（僅當列仍為舊值） */
+export async function seedDelta() {
+  const db = getDb();
+  const existing = await db.select().from(equipment);
+  const names = new Set(existing.map((r) => r.name));
+  const vendorNames = await db.select().from(vendors);
+  const vendorIdMap = new Map(vendorNames.map((v) => [v.name, v.id]));
+
+  let inserted = 0;
+  for (const e of seedEquipment) {
+    if (names.has(e.name)) continue;
+    if (!vendorIdMap.has(e.vendor)) {
+      const meta = VENDOR_META[e.vendor] ?? {};
+      const r = await db.insert(vendors).values({
+        name: e.vendor,
+        country: meta.country ?? null,
+        website: meta.website ?? null,
+        isFeatured: meta.featured ?? false,
+      });
+      vendorIdMap.set(e.vendor, Number(r[0].insertId));
+    }
+    await db.insert(equipment).values({
+      name: e.name,
+      vendorId: vendorIdMap.get(e.vendor) ?? null,
+      vendorName: e.vendor,
+      category: e.category,
+      capacityKw: e.capacityKw,
+      peakPowerConsumptionKw: e.peakPowerConsumptionKw,
+      efficiency: e.efficiency,
+      heightM: e.heightM,
+      widthM: e.widthM,
+      depthM: e.depthM,
+      accessAreaShare: e.accessAreaShare,
+      generation: e.generation,
+      sourceUrl: e.sourceUrl,
+      notes: e.notes,
+      isCustom: e.isCustom,
+      engineEligible: e.engineEligible,
+    });
+    inserted++;
+  }
+  if (inserted) console.log(`[ensureDb] 增量種子新增 ${inserted} 項設備`);
+
+  for (const patch of SEED_PATCHES) {
+    await db
+      .update(equipment)
+      .set(patch.set)
+      .where(and(eq(equipment.name, patch.name), eq(equipment.capacityKw, patch.matchCapacity)));
+  }
+}
+
 async function seedIfEmpty() {
   const db = getDb();
   const [eqCount] = await db.select({ n: sql<number>`count(*)` }).from(equipment);
   if (eqCount.n > 0) {
-    console.log(`[ensureDb] 資料已存在（equipment=${eqCount.n}），略過 seed`);
+    console.log(`[ensureDb] 資料已存在（equipment=${eqCount.n}），執行增量種子`);
+    await seedDelta();
     return;
   }
   console.log("[ensureDb] 開始寫入種子資料…");

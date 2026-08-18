@@ -36,4 +36,6 @@ npx tsx verifier/v1/engine-check.ts
 DATABASE_URL=mysql://dcgen:dcgenpass@localhost:3306/dcgen_test npx tsx verifier/v1/api-check.ts
 ```
 
-歷次 run 紀錄：`verifier/runs/2026-08-17T02-engine-check.md`（36/36）、`2026-08-17T02-api-check.md`（20/20）、`2026-08-17T05-engine-check-final.md`（36/36）、`2026-08-17T05-api-check-final.md`（20/20）。
+歷次 run 紀錄：`verifier/runs/2026-08-17T02-engine-check.md`（36/36）、`2026-08-17T02-api-check.md`（20/20）、`2026-08-17T05-engine-check-final.md`（36/36）、`2026-08-17T05-api-check-final.md`（20/20）、`2026-08-17T07-i18n-final.md`（36/36、20/20）、`2026-08-17T09-layout-final.md`（36/36、23/23，新增 layouts CRUD）、`2026-08-18T00-data-final-v2.md`（36/36、26/26，資料擴充 127 項＋審計修正＋增量種子 B7）。
+
+2026-08-18 資料擴充後，A4 基準已以全型錄重新對拍（Power：CDU 改由修正後的 CoolChip 100 ×1800 勝出；Space：冰水機由 YORK YZ ×33 勝出——新廠商產品實質參與選型）。

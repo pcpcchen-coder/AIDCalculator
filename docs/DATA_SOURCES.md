@@ -1,6 +1,43 @@
 # 設備型錄資料來源
 
-種子資料共 **96 項設備、23 家廠商**（2026-08-17 蒐集），逐筆於 `equipment.sourceUrl` 附來源。原則：**數值必須來自原廠型錄/官方文件；查不到的欄位留空（NULL）不編造**；推算值於 notes 明確標記。
+種子資料共 **127 項設備、38 家廠商**（2026-08-17 初版 96 項；2026-08-18 擴充 31 款冰水機並套用審計修正），逐筆於 `equipment.sourceUrl` 附來源。原則：**數值必須來自原廠型錄/官方文件；查不到的欄位留空（NULL）不編造**；推算值於 notes 明確標記。
+
+## 2026-08-18 擴充：16 家冰水機廠商（31 款）
+
+| 廠商 | 產品 |
+|---|---|
+| Trane 特靈 | CenTraVac CVHH、CenTraVac CDHH（資料中心專用） |
+| Carrier 開利 | AquaEdge 19DV、19MV 磁浮 |
+| York 約克（JCI） | YZ 磁浮、YK 離心式 |
+| McQuay 麥克維爾（Daikin） | Magnitude WMC、WMT |
+| Climaveneta 科慕威（三菱電機） | TECS2-W HFO 1414、TECS2 HFO 1053 |
+| Smardt 斯馬特（荏原） | TW-Class WE200.4H 無油磁懸浮、AeroPure AF 資料中心系列 |
+| Profroid（Carrier 體系） | PowerCO₂OL（CO₂）、PROFROID CO₂ 螺桿 |
+| Aermec 艾熱 | NSM 2002、TBG 4310 無油磁懸浮 |
+| Daikin 大金 | Magnitude WME-C Quad、WMT、WME0500S |
+| Mitsubishi Electric 三菱電機 | MECH-iC 1232、MECH-iC 1764 |
+| Hitachi 日立 | GXG-SIT/GSG-SIT 變頻離心式、WVY 水冷變頻螺桿 |
+| Ebara 荏原 | RTBA/RTBA-V 渦輪冷凍機、RTGC 兩段離心式 |
+| Gree 格力 | CVS 光伏直驅變頻離心式 |
+| Midea 美的 | MagBoost CCWG500EV、MagBoost Apex CCWG200EV(X) |
+| TICA 天加 | SMARDT 中國版無油磁懸浮、SMARDT WA240 |
+| Dunham-Bush 頓漢布什 | WCFX-V 變頻螺桿、WCFX-E 定頻螺桿 |
+
+容量/功耗條件（AHRI、EN14511、COP↔kW 換算式、RT→kW 換算）與「系列代表值/最大值」取法均逐筆記於 notes。
+
+## 2026-08-18 資料審計與修正
+
+依 20 項抽樣核對原廠來源＋全量內部一致性檢查（報告見 verifier 紀錄），修正：
+
+| 項目 | 修正 | 依據 |
+|---|---|---|
+| Vertiv CoolChip 100 | 1000→**100 kW**、7.5→**0.7 kW**、尺寸→0.175×0.445×0.83 m | Vertiv datasheet SL-71348（REPO 上游 10 倍誤植） |
+| Caterpillar Diesel-C1.1 | 高度 16→**0.996 m** | cat.com 官方規格頁 |
+| Huawei UPS5000-H 1200kVA | 1080→**1200 kW** | 官方 Output PF=1 |
+| Vertiv UL1066-2000A | 12000→**1660 kW** | √3×480V×2000A 物理上限推算（已標記） |
+| MC Diesel 10/12/20MW | 尺寸標註「存疑待核實」 | 內部一致性（無官方來源） |
+| 全部發電機 | notes 加註 efficiency=1 為建模佔位慣例 | 避免誤用為熱效率 |
+| BlokSeT / ABB MNS | 設 engineEligible=false | 效率原廠未公告，不參與自動選型（可手動啟用） |
 
 ## 三大來源
 
