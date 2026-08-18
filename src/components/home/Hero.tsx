@@ -25,6 +25,8 @@ function CountUp({ target, start, duration = 1400 }: { target: number; start: bo
 
 export default function Hero() {
   const { t } = useI18n();
+  const statsQuery = trpc.stats.get.useQuery();
+  const stats = statsQuery.data;
   const sectionRef = useRef<HTMLElement>(null);
   const [statsStart, setStatsStart] = useState(false);
   const { scrollYProgress } = useScroll({

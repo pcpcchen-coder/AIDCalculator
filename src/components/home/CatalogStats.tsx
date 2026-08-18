@@ -20,18 +20,25 @@ function DeltaDot() {
 
 export default function CatalogStats() {
   const { t } = useI18n();
+  const statsQuery = trpc.stats.get.useQuery();
+  const stats = statsQuery.data;
 
-  // 靜態假資料（後續接 tRPC 聚合）
-  const categoryData = [
-    { name: t('home.stats.cat.cdu'), count: 11, vendor: 'Delta／Vertiv', hasDelta: true },
-    { name: t('home.stats.cat.chiller'), count: 9, vendor: 'Carrier／Trane', hasDelta: false },
-    { name: t('home.stats.cat.drycooler'), count: 7, vendor: 'Evapco／BAC', hasDelta: false },
-    { name: t('home.stats.cat.tower'), count: 6, vendor: 'Evapco／SPX', hasDelta: false },
-    { name: t('home.stats.cat.pdu'), count: 8, vendor: 'Delta／Schneider', hasDelta: true },
-    { name: t('home.stats.cat.ups'), count: 12, vendor: 'Delta／Vertiv', hasDelta: true },
-    { name: t('home.stats.cat.msb'), count: 5, vendor: 'Schneider／ABB', hasDelta: false },
-    { name: t('home.stats.cat.gen'), count: 7, vendor: 'Cummins／CAT', hasDelta: false },
+  // 類別靜態詮釋（順序即圖表順序）；數量即時取自 stats.get
+  const CATEGORY_META = [
+    { key: 'cdu', name: t('home.stats.cat.cdu'), vendor: 'Delta／Vertiv', hasDelta: true },
+    { key: 'chiller', name: t('home.stats.cat.chiller'), vendor: 'Carrier／Trane', hasDelta: false },
+    { key: 'dry_cooler', name: t('home.stats.cat.drycooler'), vendor: 'Evapco／BAC', hasDelta: false },
+    { key: 'cooling_tower', name: t('home.stats.cat.tower'), vendor: 'Evapco／SPX', hasDelta: false },
+    { key: 'pdu', name: t('home.stats.cat.pdu'), vendor: 'Delta／Schneider', hasDelta: true },
+    { key: 'ups', name: t('home.stats.cat.ups'), vendor: 'Delta／Vertiv', hasDelta: true },
+    { key: 'msb', name: t('home.stats.cat.msb'), vendor: 'Schneider／ABB', hasDelta: false },
+    { key: 'generator', name: t('home.stats.cat.gen'), vendor: 'Cummins／CAT', hasDelta: false },
   ];
+  const countByCategory = new Map((stats?.categoryBreakdown ?? []).map((c) => [c.category, c.n]));
+  const categoryData = CATEGORY_META.map((m) => ({
+    ...m,
+    count: countByCategory.get(m.key) ?? 0,
+  }));
 
   return (
     <section className="border-y border-line bg-bg-1/50">
@@ -45,7 +52,7 @@ export default function CatalogStats() {
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             label={t('home.stats.total')}
-            value={65}
+            value={stats?.equipmentCount ?? 65}
             variant="accent"
             icon={<Database className="h-4 w-4" />}
             hint={t('home.stats.totalHint')}
@@ -66,7 +73,7 @@ export default function CatalogStats() {
           />
           <StatCard
             label={t('home.stats.itConfigs')}
-            value={24}
+            value={stats?.itConfigCount ?? 24}
             variant="cool"
             icon={<Server className="h-4 w-4" />}
             hint="Canonical＋Reference"
@@ -74,7 +81,7 @@ export default function CatalogStats() {
           />
           <StatCard
             label={t('home.stats.params')}
-            value={22}
+            value={stats?.parameterCount ?? 22}
             variant="power"
             icon={<SlidersHorizontal className="h-4 w-4" />}
             hint={t('home.stats.paramsHint')}
@@ -189,4 +196,3 @@ export default function CatalogStats() {
       </div>
     </section>
   );
-}
