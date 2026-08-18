@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useI18n } from '@/i18n';
+import { trpc } from '@/providers/trpc';
 
 const HeroParticles = lazy(() => import('@/components/home/HeroParticles'));
 
@@ -43,9 +44,9 @@ export default function Hero() {
 
   const title = t('home.hero.title');
   const heroStats: Array<{ value: number; suffix: string; label: string }> = [
-    { value: 65, suffix: '+', label: t('home.hero.stats.equipment') },
-    { value: 4, suffix: '', label: t('home.hero.stats.dcTypes') },
-    { value: 19, suffix: '', label: t('home.hero.stats.algorithms') },
+    { value: stats?.equipmentCount ?? 65, suffix: '+', label: t('home.hero.stats.equipment') },
+    { value: stats?.itConfigCount ?? 4, suffix: '', label: t('home.hero.stats.dcTypes') },
+    { value: stats?.algorithmCount ?? 19, suffix: '', label: t('home.hero.stats.algorithms') },
     { value: 8, suffix: '', label: t('home.hero.stats.infra') },
   ];
 

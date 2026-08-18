@@ -16,6 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/i18n';
 import { Languages } from 'lucide-react';
+import { RELEASE_LABEL, RELEASE_DATE, RELEASE_NOTE } from '@/lib/version';
 
 const NAV_ITEMS = [
   { to: '/', key: 'nav.dashboard', icon: LayoutDashboard, end: true },

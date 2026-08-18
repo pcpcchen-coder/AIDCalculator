@@ -5,6 +5,7 @@ import { Database, Factory, Server, SlidersHorizontal, ArrowRight } from 'lucide
 import SectionHeading from '@/components/home/SectionHeading';
 import StatCard from '@/components/StatCard';
 import { useI18n, tpl } from '@/i18n';
+import { trpc } from '@/providers/trpc';
 
 const CHART_COLORS = ['#22D3EE', '#38BDF8', '#A78BFA', '#F59E0B', '#34D399', '#64748B'];
 
@@ -34,7 +35,7 @@ export default function CatalogStats() {
     { key: 'msb', name: t('home.stats.cat.msb'), vendor: 'Schneider／ABB', hasDelta: false },
     { key: 'generator', name: t('home.stats.cat.gen'), vendor: 'Cummins／CAT', hasDelta: false },
   ];
-  const countByCategory = new Map((stats?.categoryBreakdown ?? []).map((c) => [c.category, c.n]));
+  const countByCategory = new Map((stats?.categoryBreakdown ?? []).map((c: { category: string; n: number }) => [c.category, c.n] as const));
   const categoryData = CATEGORY_META.map((m) => ({
     ...m,
     count: countByCategory.get(m.key) ?? 0,
@@ -60,7 +61,7 @@ export default function CatalogStats() {
           />
           <StatCard
             label={t('home.stats.vendors')}
-            value={18}
+            value={stats?.vendorCount ?? 18}
             variant="green"
             icon={<Factory className="h-4 w-4" />}
             hint={
