@@ -127,6 +127,11 @@ const DDL: string[] = [
   )`,
 ];
 
+/** 欄位漂移防護：舊部署的 equipment 表可能缺後來新增的欄位 */
+const DRIFT_COLUMNS: { table: string; column: string; ddl: string }[] = [
+  { table: "equipment", column: "engine_eligible", ddl: "ALTER TABLE equipment ADD COLUMN engine_eligible TINYINT(1) NOT NULL DEFAULT 1" },
+];
+
 const VENDOR_META: Record<string, { country?: string; website?: string; featured?: boolean }> = {
   "Delta Electronics": { country: "台灣", website: "https://www.deltaww.com", featured: true },
   Vertiv: { country: "美國", website: "https://www.vertiv.com" },
@@ -302,6 +307,8 @@ async function seedIfEmpty() {
 }
 
 let inflight: Promise<void> | null = null;
+let lastError: string | null = null;
+let lastOkAt: string | null = null;
 
 export function ensureDb(): Promise<void> {
   if (!inflight) {
@@ -310,11 +317,59 @@ export function ensureDb(): Promise<void> {
       for (const stmt of DDL) {
         await db.execute(sql.raw(stmt));
       }
+      // 欄位漂移防護（舊表缺新欄位時補欄位）
+      for (const d of DRIFT_COLUMNS) {
+        const rows = await db.execute(
+          sql.raw(
+            `SELECT COUNT(*) n FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '${d.table}' AND COLUMN_NAME = '${d.column}'`,
+          ),
+        );
+        const n = Number((rows[0] as unknown as { n: number }[])[0]?.n ?? 0);
+        if (n === 0) {
+          console.log(`[ensureDb] 補欄位 ${d.table}.${d.column}`);
+          await db.execute(sql.raw(d.ddl));
+        }
+      }
       await seedIfEmpty();
+      lastOkAt = new Date().toISOString();
+      lastError = null;
     })().catch((err) => {
       inflight = null; // 失敗時允許下次重試
+      lastError = err instanceof Error ? `${err.message}` : String(err);
+      console.error("[ensureDb] 失敗：", lastError);
       throw err;
     });
   }
   return inflight;
+}
+
+/** 診斷用：初始化狀態 + 各表筆數 */
+export async function getDbStatus() {
+  let ensureState: "ok" | "error" | "pending" = "pending";
+  try {
+    await ensureDb();
+    ensureState = "ok";
+  } catch {
+    ensureState = "error";
+  }
+  const counts: Record<string, number | string> = {};
+  if (ensureState === "ok") {
+    const db = getDb();
+    for (const t of ["vendors", "equipment", "it_configurations", "it_node_types", "parameters", "algorithms", "designs", "layouts"]) {
+      try {
+        const r = await db.execute(sql.raw(`SELECT COUNT(*) n FROM \`${t}\``));
+        counts[t] = Number((r[0] as unknown as { n: number }[])[0]?.n ?? 0);
+      } catch (e) {
+        counts[t] = `ERR: ${e instanceof Error ? e.message : String(e)}`;
+      }
+    }
+  }
+  return {
+    ensureState,
+    lastError,
+    lastOkAt,
+    hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+    nodeEnv: process.env.NODE_ENV ?? null,
+    counts,
+  };
 }
