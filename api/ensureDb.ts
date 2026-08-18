@@ -15,6 +15,31 @@ import {
   vendors,
 } from "../db/schema";
 import { seedAlgorithms, seedEquipment, seedItConfigs, seedParameters } from "../db/seed-data";
+import net from "node:net";
+import dns from "node:dns/promises";
+
+/** 底層連線探測：DNS 解析 + TCP connect（繞過 SQL 層，直接看網路通不通） */
+async function tcpProbe(): Promise<Record<string, unknown>> {
+  try {
+    const u = new URL(process.env.DATABASE_URL ?? "");
+    const host = u.hostname;
+    const port = Number(u.port || 3306);
+    const ips = await dns.lookup(host, { all: true }).then((a) => a.map((x) => x.address)).catch(() => ["DNS_FAIL"]);
+    const t0 = Date.now();
+    const tcp = await new Promise<string>((resolve) => {
+      const sock = new net.Socket();
+      const done = (msg: string) => { sock.destroy(); resolve(msg); };
+      sock.setTimeout(8000);
+      sock.once("connect", () => done(`ok ${Date.now() - t0}ms`));
+      sock.once("timeout", () => done("timeout 8000ms"));
+      sock.once("error", (e) => done(`error: ${(e as { code?: string }).code ?? e.message}`));
+      sock.connect(port, host);
+    });
+    return { host, port, ips, tcp };
+  } catch (e) {
+    return { probeError: e instanceof Error ? e.message : String(e) };
+  }
+}
 
 const DDL: string[] = [
   `CREATE TABLE IF NOT EXISTS vendors (
@@ -310,9 +335,52 @@ let inflight: Promise<void> | null = null;
 let lastError: string | null = null;
 let lastOkAt: string | null = null;
 
+/** 展開 err.cause 鏈，拿到底層原因（ETIMEDOUT / Access denied / ...） */
+function errorChain(err: unknown): string {
+  const parts: string[] = [];
+  let cur: unknown = err;
+  for (let i = 0; i < 5 && cur; i++) {
+    if (cur instanceof Error) {
+      const code = (cur as { code?: string }).code;
+      parts.push(`${cur.message.split("\n")[0]}${code ? ` [${code}]` : ""}`);
+      cur = (cur as { cause?: unknown }).cause;
+    } else {
+      parts.push(String(cur));
+      break;
+    }
+  }
+  return parts.join(" <= ");
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export function ensureDb(): Promise<void> {
   if (!inflight) {
     inflight = (async () => {
+      // serverless DB 喚醒與臨時故障需要時間：最多 3 輪、間隔 20s
+      let lastErr: unknown;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await initOnce();
+          return;
+        } catch (e) {
+          lastErr = e;
+          console.error(`[ensureDb] 第 ${attempt} 輪失敗`, e);
+          if (attempt < 3) await sleep(20000);
+        }
+      }
+      throw lastErr;
+    })().catch((err) => {
+      inflight = null; // 失敗時允許下次重試
+      lastError = errorChain(err);
+      console.error("[ensureDb] 失敗：", lastError);
+      throw err;
+    });
+  }
+  return inflight;
+}
+
+async function initOnce() {
       const db = getDb();
       for (const stmt of DDL) {
         await db.execute(sql.raw(stmt));
@@ -333,14 +401,6 @@ export function ensureDb(): Promise<void> {
       await seedIfEmpty();
       lastOkAt = new Date().toISOString();
       lastError = null;
-    })().catch((err) => {
-      inflight = null; // 失敗時允許下次重試
-      lastError = err instanceof Error ? `${err.message}` : String(err);
-      console.error("[ensureDb] 失敗：", lastError);
-      throw err;
-    });
-  }
-  return inflight;
 }
 
 /** 診斷用：初始化狀態 + 各表筆數 */
@@ -364,6 +424,7 @@ export async function getDbStatus() {
       }
     }
   }
+  const probe = ensureState === "ok" ? null : await tcpProbe();
   return {
     ensureState,
     lastError,
@@ -371,5 +432,6 @@ export async function getDbStatus() {
     hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
     nodeEnv: process.env.NODE_ENV ?? null,
     counts,
+    probe,
   };
 }
